@@ -85,5 +85,3 @@ def loop():
         value_losses.append(vl)
         policy_losses.append(pl)
 
-
-    print("hi")

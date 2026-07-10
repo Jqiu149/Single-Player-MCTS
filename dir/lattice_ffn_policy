@@ -4,9 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class HillClimbingPolicy(nn.Module):
+class Policy(nn.Module):
     """
-    Simple neural network policy for solving the hill climbing task.
     Consists of one common dense layer for both policy and value estimate and
     another dense layer for each.
     """
@@ -26,6 +25,7 @@ class HillClimbingPolicy(nn.Module):
         inp = torch.from_numpy(inp)
 
         h_relu = F.relu(self.dense1(inp))
+
         logits = self.dense_p(h_relu)
         policy = F.softmax(logits, dim=1)
 

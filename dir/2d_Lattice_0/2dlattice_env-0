@@ -14,7 +14,7 @@ Class Actions(Enum):
 #states will be list of 2 np arrays of length 2 and a boolean 'done'.
 #for this environment we'll manually choose a starting vector
 
-class 2DLattice_Env-0(StaticEnv):
+class Env(StaticEnv):
 
     @staticmethod
     def next_state(state, action):
