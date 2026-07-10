@@ -1,0 +1,84 @@
+from enum import Enum
+
+
+START_VECTORS== [ np.array([1,0]), np.array([0,1])]
+MAX_STEP = 100_000
+
+
+Class Actions(Enum):
+	END = 0
+	S = 1
+	T = 2
+
+	
+#states will be list of 2 np arrays of length 2 and a boolean 'done'.
+#for this environment we'll manually choose a starting vector
+
+class 2DLattice_Env-0(StaticEnv):
+
+    @staticmethod
+    def next_state(state, action):
+        """
+        Given the current state of the environment and the action that is
+        performed in that state, returns the resulting state.
+        :param state: Current state of the environment.
+        :param action: Action that is performed in that state.
+        :return: Resulting state.
+        """
+
+	if(action == Action.END):
+		state[-1] = True
+		return state	
+	if(state == Action.S):
+		temp = state[0]
+		state[0] = -state[1]
+		state[1] = temp
+	else:
+		state[0] = state[0] + state[1]	
+	return state
+
+    @staticmethod
+    def is_done_state(state, step_idx):
+        """
+        Given the state and the index of the current step, returns whether
+        that state is the end of an episode, i.e. a done state.
+        :param state: Current state.
+        :param step_idx: Index of the step at which the state occurred.
+        :return: True, if the step is a done state, False otherwise.
+        """	
+	return state[3] == True or step_idx >= MAX_STEP
+
+    @staticmethod
+    def initial_state():
+        """
+        Returns the initial state of the environment.
+        """
+	return START_VECTOR + [False]
+
+    @staticmethod
+    def get_obs_for_states(states):
+        """
+        Some environments distinguish states and observations. An observation
+        can be a subset (e.g. in Poker, state is all cards in game, observation
+        is cards on player's hand) or superset of the state (i.e. observations
+        add additional information).
+        :param states: List of states.
+        :return: Numpy array of observations.
+        """
+	return np.array(states)
+
+    @staticmethod
+    def get_return(state, step_idx):
+        """
+        Returns the return that the agent has achieved so far when he is in
+        a given state after a given number of steps.
+        :param state: Current state that the agent is in.
+        :param step_idx: Index of the step at which the agent reached that
+        state.
+        :return: Return the agent has achieved so far.
+        """
+
+	magnitudes = [np.linalg.norm( np.array(v) ) for v in state[0:-1]]
+	
+	return min(magnitudes))
+	

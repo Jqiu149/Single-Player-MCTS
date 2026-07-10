@@ -1,8 +1,8 @@
 import numpy as np
 import gym
 
-from utils import cprint
-from static_env import StaticEnv
+from .utils import cprint
+from ..static_env import StaticEnv
 
 
 UP = 0
