@@ -103,7 +103,7 @@ class HillClimbingEnv(gym.Env, StaticEnv):
 
     @staticmethod
     def initial_state(shape=(7, 7)):
-        return (shape[0]-1) * shape[0]
+        return  np.random.randint(0, 48)
 
     @staticmethod
     def get_obs_for_states(states):

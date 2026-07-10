@@ -433,7 +433,7 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for _
+    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)
@@ -460,20 +460,21 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
     TEMP_THRESHOLD = -1
 
-
     mcts = MCTS(agent_netw, TreeEnv)
 
     mcts.initialize_search()
 
     # Must run this once at the start, so that noise injection actually affects
     # the first action of the episode.
-    first_node = mcts.root.select_leaf()   # like does the run down till find a leaf thing
+    first_node = mcts.root.select_leaf()   # like does the run down till find a leaf thing, which in this case is jsut the first node we have in the tree?
     probs, vals = agent_netw.step(
         TreeEnv.get_obs_for_states([first_node.state]))
     first_node.incorporate_estimates(probs[0], vals[0], first_node) # call after find a leaf, basically put in the probabilities of the new guys you add and their values? and then propogates things upwards?
 
+    action_list = []
     while True:
         #mcts.root.inject_noise()
+
         current_simulations = mcts.root.N
 
         # We want `num_simulations` simulations per action not counting
@@ -485,18 +486,19 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
         # print("_"*100)
 
         action = mcts.pick_action() 
-        mcts.take_action(action)   #changes root to be the guy move to?
+        mcts.take_action(action)   #changes root to be the guy move to? and stores the observation, probabilites, and reward at this step
+        action_list.append(action)
 
         if mcts.root.is_done():
             break
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for _
+    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)
 
     obs = np.concatenate(mcts.obs)
-    return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state)
+    return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state, action_list)
 
