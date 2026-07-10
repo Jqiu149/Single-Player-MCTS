@@ -77,6 +77,7 @@ def loop():
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  32,
                                                                  HillClimbingEnv)
+        print(returns)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
 
         batch = mem.get_minibatch()

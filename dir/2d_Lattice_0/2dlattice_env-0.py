@@ -37,6 +37,9 @@ class Env(StaticEnv):
 		state[0] = state[0] + state[1]	
 	return state
 
+
+
+# i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
     @staticmethod
     def is_done_state(state, step_idx):
         """

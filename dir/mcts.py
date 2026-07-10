@@ -441,3 +441,62 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
     obs = np.concatenate(mcts.obs)
     return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state)
 
+
+
+
+#want this to be the same as thier execute episode, but just no dirichelet noise and choose node deterministically form N so the tmep threshold guy is zero
+
+
+#now i'm not sure if we want to get rid of dirichelet noise or not
+#but... for now at least
+# have set the TEMP_THRESHOLD value ot be -1. I think not 0 cus the comparison is if the depth of node is > than this then do argmax. and i think that node depth can be 0 but not nonegative...
+# commented out the inject noise call
+
+
+
+
+#.... i think we can still use the information from this for training. maybe i'm wrong...
+def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
+
+    TEMP_THRESHOLD = -1
+
+
+    mcts = MCTS(agent_netw, TreeEnv)
+
+    mcts.initialize_search()
+
+    # Must run this once at the start, so that noise injection actually affects
+    # the first action of the episode.
+    first_node = mcts.root.select_leaf()   # like does the run down till find a leaf thing
+    probs, vals = agent_netw.step(
+        TreeEnv.get_obs_for_states([first_node.state]))
+    first_node.incorporate_estimates(probs[0], vals[0], first_node) # call after find a leaf, basically put in the probabilities of the new guys you add and their values? and then propogates things upwards?
+
+    while True:
+        #mcts.root.inject_noise()
+        current_simulations = mcts.root.N
+
+        # We want `num_simulations` simulations per action not counting
+        # simulations from previous actions.
+        while mcts.root.N < current_simulations + num_simulations:
+            mcts.tree_search()
+
+        # mcts.root.print_tree()
+        # print("_"*100)
+
+        action = mcts.pick_action() 
+        mcts.take_action(action)   #changes root to be the guy move to?
+
+        if mcts.root.is_done():
+            break
+
+    # Computes the returns at each step from the list of rewards obtained at
+    # each step. The return is the sum of rewards obtained *after* the step.
+    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for _
+           in range(len(mcts.rewards))]
+
+    total_rew = np.sum(mcts.rewards)
+
+    obs = np.concatenate(mcts.obs)
+    return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state)
+
