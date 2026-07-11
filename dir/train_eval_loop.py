@@ -19,6 +19,11 @@ from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
 #from .lattice_ffn_policy import Policy
 #from .2d_lattice_env_0.env import Env
 
+#from .lattice_ffn_policy import Policy
+#from .2d_lattice_env_0.env import Env
+
+
+
 n_obs = 49 #... only needed for thier policy netowrk...
 
 n_actions = 4
@@ -32,7 +37,7 @@ network = trainer.step_model
 
 
 
-
+num_simulations = 40
 memory_size = 200
 
 
@@ -47,7 +52,7 @@ mem = ReplayMemory(memory_size,
 
 def test_agent(iteration):
     obs, pis, returns, total_reward, done_state, action_list= execute_episode_eval(network,
-                                                                 32,
+                                                                 num_simulations,
                                                                 Env)
     return total_reward
 
@@ -71,7 +76,7 @@ def loop():
             plt.show()
 
         obs, pis, returns, total_reward, done_state = execute_episode(network,
-                                                                 32,
+                                                                 num_simulations,
                                                                  Env)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
 
