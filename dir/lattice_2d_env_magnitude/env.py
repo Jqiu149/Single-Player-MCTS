@@ -2,7 +2,7 @@ from enum import Enum
 import numpy as np
 from ..static_env import StaticEnv
 
-START_VECTORS = [ np.array([1,10]), np.array([0,1])]
+START_VECTORS = [ [1,10], [0,1]]
 MAX_STEP = 100_000
 
 
@@ -29,10 +29,10 @@ class Env(StaticEnv):
         :return: Resulting state.
         """
 
-        if(action == Action.END):
+        if(action == Actions.END):
             state[-1] = True
             return state	
-        if(state == Action.S):
+        if(state == Actions.S):
             temp = state[0]
             state[0] = -state[1]
             state[1] = temp
@@ -52,7 +52,7 @@ class Env(StaticEnv):
         :param step_idx: Index of the step at which the state occurred.
         :return: True, if the step is a done state, False otherwise.
         """	
-        return state[3] == True or step_idx >= MAX_STEP
+        return state[2] == True or step_idx >= MAX_STEP
 
     @staticmethod
     def initial_state():
@@ -71,7 +71,10 @@ class Env(StaticEnv):
         :param states: List of states.
         :return: Numpy array of observations.
         """
-        return states
+        print("states", states)
+        x = np.array([ state[0:-1] for state in states],dtype=np.float32)
+        print(x)
+        return x
 
     @staticmethod
     def get_return(state, step_idx):

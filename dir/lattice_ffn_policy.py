@@ -21,12 +21,14 @@ class Policy(nn.Module):
         self.dense_v = nn.Linear(n_hidden, 1)
 
     def forward(self, obs):
-        inp = np.concatenate(obs)
-        inp = torch.tensor(obs)
+        inp = obs.reshape(obs.shape[0], -1)
+        inp = torch.tensor(inp)
+        
 
         h_relu = F.relu(self.dense1(inp))
 
         logits = self.dense_p(h_relu)
+
         policy = F.softmax(logits, dim=1)
 
         value = self.dense_v(h_relu).view(-1)
@@ -40,7 +42,6 @@ class Policy(nn.Module):
         :return: Policy estimate [N, n_actions] and value estimate [N] for
         the given observations.
         """
-        obs = [ x[0:-1] for x in obs]
         _, pi, v = self.forward(obs)
 
         return pi.detach().numpy(), v.detach().numpy()
