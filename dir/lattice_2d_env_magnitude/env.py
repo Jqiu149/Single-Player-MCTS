@@ -2,7 +2,7 @@ from enum import Enum
 import numpy as np
 from ..static_env import StaticEnv
 
-START_VECTORS = [ [1,10], [0,1]]
+START_VECTORS = [ np.array([1,10]), np.array([0,1])]
 MAX_STEP = 100_000
 
 
@@ -71,9 +71,7 @@ class Env(StaticEnv):
         :param states: List of states.
         :return: Numpy array of observations.
         """
-        print("states", states)
         x = np.array([ state[0:-1] for state in states],dtype=np.float32)
-        print(x)
         return x
 
     @staticmethod
