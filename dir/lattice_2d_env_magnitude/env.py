@@ -52,6 +52,8 @@ class Env(StaticEnv):
         :param step_idx: Index of the step at which the state occurred.
         :return: True, if the step is a done state, False otherwise.
         """	
+        if (state[2] == True or step_idx >= MAX_STEP): print("done")
+        print(step_idx)
         return state[2] == True or step_idx >= MAX_STEP
 
     @staticmethod

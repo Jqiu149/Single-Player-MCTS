@@ -57,11 +57,14 @@ num_simulations = 40
 memory_size = 200
 
 
+
+
+obs_shape = [num_vectors, vector_dim]
 mem = ReplayMemory(memory_size,
-                   { "ob": np.long,
+                   { "ob": np.float32,
                      "pi": np.float32,
                      "return": np.float32},
-                   { "ob": [],
+                   { "ob":obs_shape,
                      "pi": [n_actions],
                      "return": []})
 
