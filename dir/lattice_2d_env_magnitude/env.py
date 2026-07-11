@@ -1,11 +1,12 @@
 from enum import Enum
+import numpy as np
+from ..static_env import StaticEnv
 
-
-START_VECTORS== [ np.array([1,0]), np.array([0,1])]
+START_VECTORS = [ np.array([1,10]), np.array([0,1])]
 MAX_STEP = 100_000
 
 
-Class Actions(Enum):
+class Actions(Enum):
 	END = 0
 	S = 1
 	T = 2
@@ -15,6 +16,8 @@ Class Actions(Enum):
 #for this environment we'll manually choose a starting vector
 
 class Env(StaticEnv):
+    n_actions= 3
+
 
     @staticmethod
     def next_state(state, action):
@@ -26,16 +29,16 @@ class Env(StaticEnv):
         :return: Resulting state.
         """
 
-	if(action == Action.END):
-		state[-1] = True
-		return state	
-	if(state == Action.S):
-		temp = state[0]
-		state[0] = -state[1]
-		state[1] = temp
-	else:
-		state[0] = state[0] + state[1]	
-	return state
+        if(action == Action.END):
+            state[-1] = True
+            return state	
+        if(state == Action.S):
+            temp = state[0]
+            state[0] = -state[1]
+            state[1] = temp
+        else:
+            state[0] = state[0] + state[1]	
+        return state
 
 
 
@@ -49,14 +52,14 @@ class Env(StaticEnv):
         :param step_idx: Index of the step at which the state occurred.
         :return: True, if the step is a done state, False otherwise.
         """	
-	return state[3] == True or step_idx >= MAX_STEP
+        return state[3] == True or step_idx >= MAX_STEP
 
     @staticmethod
     def initial_state():
         """
         Returns the initial state of the environment.
         """
-	return START_VECTOR + [False]
+        return START_VECTORS+ [False]
 
     @staticmethod
     def get_obs_for_states(states):
@@ -68,7 +71,7 @@ class Env(StaticEnv):
         :param states: List of states.
         :return: Numpy array of observations.
         """
-	return np.array(states)
+        return states
 
     @staticmethod
     def get_return(state, step_idx):
@@ -81,7 +84,5 @@ class Env(StaticEnv):
         :return: Return the agent has achieved so far.
         """
 
-	magnitudes = [np.linalg.norm( np.array(v) ) for v in state[0:-1]]
-	
-	return min(magnitudes))
-	
+        magnitudes = [np.linalg.norm( np.array(v) ) for v in state[0:-1]]
+        return -min(magnitudes)

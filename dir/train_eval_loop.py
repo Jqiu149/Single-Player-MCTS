@@ -14,20 +14,36 @@ from .mcts import execute_episode_eval
 # setup traininer ( which is just choose your policy and pass in paramaters to it
 # -------------
 #ig we'll just change this whenever we want to test different thing?
-from .hill_climbing_example.policy import HillClimbingPolicy as Policy
-from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
-#from .lattice_ffn_policy import Policy
-#from .2d_lattice_env_0.env import Env
+
+#from .hill_climbing_example.policy import HillClimbingPolicy as Policy
+#from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
+#n_obs = 49 #... only needed for thier policy netowrk...
+
+#trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
+
+
+
+from .lattice_ffn_policy import Policy
+from .lattice_2d_env_magnitude.env import Env
+
+num_vectors = 2
+vector_dim = 2
+num_encoder_layers = 6
+encoder_nhead= 2 # needs to divide the vector dim ig?
+n_actions = 3
+
+trainer=Trainer( lambda: Policy(num_vectors, vector_dim, encoder_nhead, n_actions))
+
+
 
 #from .lattice_ffn_policy import Policy
 #from .2d_lattice_env_0.env import Env
 
 
 
-n_obs = 49 #... only needed for thier policy netowrk...
 
-n_actions = 4
-trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
+
+
 
 network = trainer.step_model
 
@@ -53,7 +69,7 @@ mem = ReplayMemory(memory_size,
 def test_agent(iteration):
     obs, pis, returns, total_reward, done_state, action_list= execute_episode_eval(network,
                                                                  num_simulations,
-                                                                Env)
+                                                                 Env )
     return total_reward
 
 

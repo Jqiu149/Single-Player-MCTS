@@ -3,12 +3,6 @@ import math
 from torch import nn, Tensor
 import numpy as np
 
-
-num_encoder_layers = 6
-vector_dim = 2
-encoder_nhead= 2 # needs to divide the vector dim ig?
-num_actions = 5
-
 device = torch.accelerator.current_accelerator().type() if torch.accelerator.is_available() else "cpu"
 print(f"Using {device}")
 
@@ -35,13 +29,15 @@ class PositionalEncoding(nn.Module):
       return self.dropout(x)
 
 
+
 class Policy(nn.Module):
-  def __init__(self):
-    super().__init__()
+  def __init__(self, ):
+    super().__init__(num_encoder_layers=6, vector_dim, encoder_nheads, num_actions)
     self.pos_encoder = PositionalEncoding(vector_dim)
 
     encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead)
     self.encoder = transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
+
 
     self.linear_p = nn.Linear(vector_dim, num_actions)
     self.linear_v = nn.Linear(vector_dim, 1)
