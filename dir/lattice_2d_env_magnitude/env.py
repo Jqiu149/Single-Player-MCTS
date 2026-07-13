@@ -3,7 +3,7 @@ import numpy as np
 from ..static_env import StaticEnv
 
 START_VECTORS = [ np.array([1,10]), np.array([0,1])]
-MAX_STEP = 100_000
+MAX_STEP = 10
 
 
 class Actions(Enum):
@@ -52,8 +52,8 @@ class Env(StaticEnv):
         :param step_idx: Index of the step at which the state occurred.
         :return: True, if the step is a done state, False otherwise.
         """	
-        if (state[2] == True or step_idx >= MAX_STEP): print("done")
-        print(step_idx)
+        #if (state[2] == True or step_idx >= MAX_STEP): print("done")
+        #print(step_idx)
         return state[2] == True or step_idx >= MAX_STEP
 
     @staticmethod

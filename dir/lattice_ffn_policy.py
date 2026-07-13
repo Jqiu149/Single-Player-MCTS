@@ -22,7 +22,7 @@ class Policy(nn.Module):
 
     def forward(self, obs):
         inp = obs.reshape(obs.shape[0], -1)
-        inp = torch.tensor(inp)
+        inp = torch.from_numpy(inp)
         
 
         h_relu = F.relu(self.dense1(inp))
