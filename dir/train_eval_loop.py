@@ -25,30 +25,46 @@ from .mcts import execute_episode_eval
 
 #trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
 
+
+#obs_shape = []
+
 #+++++++++++++
 
 
 from .lattice_ffn_policy import Policy
 from .lattice_2d_env_magnitude.env import Env
 
-num_vectors = 2
-vector_dim = 2
-num_encoder_layers = 6
-n_hidden_dim= 20
-n_actions = 3
+#n_vectors = 2
+#vector_dim = 2
+#n_hidden_dim= 20
+#n_actions = 3
+#
+#trainer=Trainer( lambda: Policy(num_vectors, vector_dim, n_hidden_dim, n_actions))
 
-trainer=Trainer( lambda: Policy(num_vectors, vector_dim, n_hidden_dim, n_actions))
 
+#obs_shape = [n_vectors, vector_dim]
 #+++++++++++++++
 
-#from .lattice_encoder_policy import Policy
-#from .lattice_2d_env_magnitude.env import Env
+from .lattice_encoder_policy import Policy
+from .lattice_2d_env_magnitude.env import Env
+
+n_enc_layers = 6  
+n_vectors = 2
+vector_dim = 2 
+encoder_nhead=2 # needs to divide vector_dim...
+n_actions=3
+
+trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
 
 
-#trainer=Trainer( lambda: Policy(num_vectors, vector_dim, encoder_nhead, n_actions))
-
-
+obs_shape = [n_vectors, vector_dim]
 #++++++++++++
+
+
+
+
+
+
 
 
 
@@ -59,28 +75,29 @@ network = trainer.step_model
 # actual train_eval loop stuff is below here ig
 
 
-
-num_simulations = 40
+num_simulations = 100
 memory_size = 200
 
+num_eval_iterations = 1
 
 
 
-obs_shape = [num_vectors, vector_dim]
+
 mem = ReplayMemory(memory_size,
                    { "ob": np.float32,
                      "pi": np.float32,
                      "return": np.float32},
                    { "ob":obs_shape,
                      "pi": [n_actions],
-                     "return": []})
+                     "return": []},
+                   batch_size = 32)
 
 
 def test_agent(iteration):
-    obs, pis, returns, total_reward, done_state, action_list= execute_episode_eval(network,
+    obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                  num_simulations,
                                                                  Env )
-    return total_reward
+    return obs, done_state, reward
 
 
 def loop():
@@ -91,8 +108,11 @@ def loop():
         if i % 100 == 0:
             n=100
             total_reward = 0
-            for j in range(n):
-                total_reward+=test_agent(i)
+            for j in range(num_eval_iterations):
+
+                obs, done_state, reward = test_agent(i)
+                print(f"obs: {obs} done_state {done_state}")
+                total_reward+=reward
             
             print(f"step{i}, avg reward: {total_reward/n}")
             

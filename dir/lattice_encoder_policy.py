@@ -1,7 +1,9 @@
-mport torch
+import torch
 import math
+
 from torch import nn, Tensor
-import numpy as np
+import numpy as n
+import torch.nn.functional as F
 
 device = torch.accelerator.current_accelerator().type() if torch.accelerator.is_available() else "cpu"
 print(f"Using {device}")
@@ -32,7 +34,7 @@ class PositionalEncoding(nn.Module):
 
 class Policy(nn.Module):
   def __init__(self, num_encoder_layers, vector_dim, encoder_nhead, num_actions):
-    super().__init__(num_encoder_layers=6, vector_dim, encoder_nhead, num_actions)
+    super().__init__()
     self.pos_encoder = PositionalEncoding(vector_dim)
 
     encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead)
@@ -54,10 +56,23 @@ class Policy(nn.Module):
                     )
     inp = self.encoder(inp)
 
-    #compute logits to get p
+    #compute logits and p
     logits = self.linear_p(inp[:, -1, :])
+    policy = F.softmax(logits, dim=1)
 
     #compute v
     v = self.linear_v(inp[:, -2, :])
 
-    return logits, v
+    return logits,policy, v
+
+  def step(self, obs):
+    """
+    Returns policy and value estimates for given observations.
+    :param obs: Array of shape [N] containing N observations.
+    :return: Policy estimate [N, n_actions] and value estimate [N] for
+    the given observations.
+    """
+    obs = torch.from_numpy(obs)
+    _, pi, v = self.forward(obs)
+
+    return pi.detach().numpy(), v.detach().numpy()

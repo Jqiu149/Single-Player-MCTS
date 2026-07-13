@@ -3,7 +3,7 @@ import numpy as np
 from ..static_env import StaticEnv
 
 START_VECTORS = [ np.array([1,10]), np.array([0,1])]
-MAX_STEP = 10
+MAX_STEP = 50
 
 
 class Actions(Enum):
