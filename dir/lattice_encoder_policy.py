@@ -31,8 +31,8 @@ class PositionalEncoding(nn.Module):
 
 
 class Policy(nn.Module):
-  def __init__(self, ):
-    super().__init__(num_encoder_layers=6, vector_dim, encoder_nheads, num_actions)
+  def __init__(self, num_encoder_layers, vector_dim, encoder_nhead, num_actions):
+    super().__init__(num_encoder_layers=6, vector_dim, encoder_nhead, num_actions)
     self.pos_encoder = PositionalEncoding(vector_dim)
 
     encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead)

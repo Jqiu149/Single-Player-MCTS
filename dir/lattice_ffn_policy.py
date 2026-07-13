@@ -20,11 +20,10 @@ class Policy(nn.Module):
         self.dense_p = nn.Linear(n_hidden, n_actions)
         self.dense_v = nn.Linear(n_hidden, 1)
 
+    # assuming obs is a tensor ig? batch_size many inputs ig?
     def forward(self, obs):
         inp = obs.reshape(obs.shape[0], -1)
-        inp = torch.from_numpy(inp)
         
-
         h_relu = F.relu(self.dense1(inp))
 
         logits = self.dense_p(h_relu)
@@ -42,6 +41,7 @@ class Policy(nn.Module):
         :return: Policy estimate [N, n_actions] and value estimate [N] for
         the given observations.
         """
+        obs = torch.from_numpy(obs)
         _, pi, v = self.forward(obs)
 
         return pi.detach().numpy(), v.detach().numpy()

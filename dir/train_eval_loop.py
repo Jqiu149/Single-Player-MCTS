@@ -15,12 +15,17 @@ from .mcts import execute_episode_eval
 # -------------
 #ig we'll just change this whenever we want to test different thing?
 
+
+
+#++++++++++++++
+
 #from .hill_climbing_example.policy import HillClimbingPolicy as Policy
 #from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
 #n_obs = 49 #... only needed for thier policy netowrk...
 
 #trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
 
+#+++++++++++++
 
 
 from .lattice_ffn_policy import Policy
@@ -29,19 +34,21 @@ from .lattice_2d_env_magnitude.env import Env
 num_vectors = 2
 vector_dim = 2
 num_encoder_layers = 6
-encoder_nhead= 2 # needs to divide the vector dim ig?
+n_hidden_dim= 20
 n_actions = 3
 
-trainer=Trainer( lambda: Policy(num_vectors, vector_dim, encoder_nhead, n_actions))
+trainer=Trainer( lambda: Policy(num_vectors, vector_dim, n_hidden_dim, n_actions))
+
+#+++++++++++++++
+
+#from .lattice_encoder_policy import Policy
+#from .lattice_2d_env_magnitude.env import Env
 
 
-
-#from .lattice_ffn_policy import Policy
-#from .2d_lattice_env_0.env import Env
+#trainer=Trainer( lambda: Policy(num_vectors, vector_dim, encoder_nhead, n_actions))
 
 
-
-
+#++++++++++++
 
 
 
@@ -80,7 +87,7 @@ def loop():
     value_losses = []
     policy_losses = []
 
-    for i in range(10000):
+    for i in range(1,10000):
         if i % 100 == 0:
             n=100
             total_reward = 0
@@ -100,7 +107,6 @@ def loop():
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
 
         batch = mem.get_minibatch()
-
 
         vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
         value_losses.append(vl)
