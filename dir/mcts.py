@@ -10,11 +10,16 @@ import collections
 import numpy as np
 
 # Exploration constant
+#originally set to 1.38
 c_PUCT = 1.38
 # Dirichlet noise alpha parameter.
+#original value is 0.03
 D_NOISE_ALPHA = 0.03
+
 # Number of steps into the episode after which we always select the
 # action with highest action probability rather than selecting randomly
+
+#originally this was 5
 TEMP_THRESHOLD = 5
 
 

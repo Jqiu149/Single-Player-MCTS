@@ -52,7 +52,7 @@ n_enc_layers = 6
 n_vectors = 2
 vector_dim = 2 
 encoder_nhead=2 # needs to divide vector_dim...
-n_actions=3
+n_actions=2
 
 trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
 
@@ -93,11 +93,14 @@ mem = ReplayMemory(memory_size,
                    batch_size = 32)
 
 
-def test_agent(iteration):
+def test_agent():
     obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                  num_simulations,
                                                                  Env )
-    return obs, done_state, reward
+    print("observation list:")
+    print(obs)
+    print(f"final state: {done_state}")
+    return reward
 
 
 def loop():
@@ -105,16 +108,12 @@ def loop():
     policy_losses = []
 
     for i in range(1,10000):
-        if i % 100 == 0:
-            n=100
+        if i % 50== 0:
             total_reward = 0
-            for j in range(num_eval_iterations):
-
-                obs, done_state, reward = test_agent(i)
-                print(f"obs: {obs} done_state {done_state}")
-                total_reward+=reward
+            for j in range(num_eval_iterations): 
+                total_reward+= test_agent()
             
-            print(f"step{i}, avg reward: {total_reward/n}")
+            print(f"step{i}, avg reward: {total_reward/num_eval_iterations}")
             
             plt.plot(value_losses, label="value loss")
             plt.plot(policy_losses, label="policy loss")

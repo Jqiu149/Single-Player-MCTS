@@ -1,23 +1,35 @@
-from enum import Enum
 import numpy as np
 from ..static_env import StaticEnv
 
-START_VECTORS = [ np.array([1,10]), np.array([0,1])]
-MAX_STEP = 50
+START_VECTORS = [ np.array([1,2]), np.array([0,2])]
+MAX_STEP = 5
 
+#action list 0
+S = 0
+T = 1
 
-class Actions(Enum):
-	END = 0
-	S = 1
-	T = 2
+num_actions = 2
+
+#action list 1
+#END = 0
+#S = 1
+#T = 2
+#num_actions = 3
+
+#action list 2
+#END=0
+#ADD_TO_v1 = 1
+#SUBTRACT_FROM_V1 = 2
+#ADD_TO_v2 = 3
+#SUBTRACT_FROM_V2 = 4
+
+#num_actions = 5
 
 	
-#states will be list of 2 np arrays of length 2 and a boolean 'done'.
-#for this environment we'll manually choose a starting vector
+#states will be list of 2 np arrays of the same dim and a boolean.
 
 class Env(StaticEnv):
-    n_actions= 3
-
+    n_actions= num_actions
 
     @staticmethod
     def next_state(state, action):
@@ -28,19 +40,28 @@ class Env(StaticEnv):
         :param action: Action that is performed in that state.
         :return: Resulting state.
         """
-
-        if(action == Actions.END):
-            state[-1] = True
-            return state	
-        if(state == Actions.S):
+        if(action== S):
             temp = state[0]
             state[0] = -state[1]
             state[1] = temp
-        else:
+        elif(action == T):
             state[0] = state[0] + state[1]	
+        else:
+            raise ValueError(f"given action, {action}, is unknown")
+
+#        if(action == END):
+#            state[-1] = True
+#            return state	
+#        elif(action== S):
+#            temp = state[0]
+#            state[0] = -state[1]
+#            state[1] = temp
+#        elif(action == T):
+#            state[0] = state[0] + state[1]	
+#        else:
+#            raise ValueError(f"given action, {action}, is unknown")
+
         return state
-
-
 
 # i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
     @staticmethod
@@ -87,5 +108,5 @@ class Env(StaticEnv):
         :return: Return the agent has achieved so far.
         """
 
-        magnitudes = [np.linalg.norm( np.array(v) ) for v in state[0:-1]]
+        magnitudes = [np.linalg.norm( v) for v in state[0:-1]]
         return -min(magnitudes)

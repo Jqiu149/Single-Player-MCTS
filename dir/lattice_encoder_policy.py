@@ -61,7 +61,7 @@ class Policy(nn.Module):
     policy = F.softmax(logits, dim=1)
 
     #compute v
-    v = self.linear_v(inp[:, -2, :])
+    v = self.linear_v(inp[:, -2, :]).view(-1)
 
     return logits,policy, v
 
