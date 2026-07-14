@@ -479,7 +479,6 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
     action_list = []
     while True:
-        #mcts.root.inject_noise()
 
         current_simulations = mcts.root.N
 
