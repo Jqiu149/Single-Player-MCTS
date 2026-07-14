@@ -21,10 +21,11 @@ from .mcts import execute_episode_eval
 
 #from .hill_climbing_example.policy import HillClimbingPolicy as Policy
 #from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
+#n_actions = 4
 #n_obs = 49 #... only needed for thier policy netowrk...
-
+#
 #trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
-
+#
 
 #obs_shape = []
 
@@ -34,30 +35,30 @@ from .mcts import execute_episode_eval
 from .lattice_ffn_policy import Policy
 from .lattice_2d_env_magnitude.env import Env
 
-#n_vectors = 2
-#vector_dim = 2
-#n_hidden_dim= 20
-#n_actions = 3
-#
-#trainer=Trainer( lambda: Policy(num_vectors, vector_dim, n_hidden_dim, n_actions))
-
-
-#obs_shape = [n_vectors, vector_dim]
-#+++++++++++++++
-
-from .lattice_encoder_policy import Policy
-from .lattice_2d_env_magnitude.env import Env
-
-n_enc_layers = 6  
 n_vectors = 2
-vector_dim = 2 
-encoder_nhead=2 # needs to divide vector_dim...
-n_actions=2
+vector_dim = 2
+n_hidden_dim= 20
+n_actions = 2
 
-trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+trainer=Trainer( lambda: Policy(n_vectors, vector_dim, n_hidden_dim, n_actions))
 
 
 obs_shape = [n_vectors, vector_dim]
+#+++++++++++++++
+
+#from .lattice_encoder_policy import Policy
+#from .lattice_2d_env_magnitude.env import Env
+#
+#n_enc_layers = 6  
+#n_vectors = 2
+#vector_dim = 2 
+#encoder_nhead=2 # needs to divide vector_dim...
+#n_actions=2
+#
+#trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+#
+#
+#obs_shape = [n_vectors, vector_dim]
 #++++++++++++
 
 
@@ -75,16 +76,15 @@ network = trainer.step_model
 # actual train_eval loop stuff is below here ig
 
 
-num_simulations = 100
+num_simulations = 15
 memory_size = 200
-
 num_eval_iterations = 1
 
 
 
 
 mem = ReplayMemory(memory_size,
-                   { "ob": np.float32,
+                   { "ob": np.long,
                      "pi": np.float32,
                      "return": np.float32},
                    { "ob":obs_shape,
@@ -126,7 +126,6 @@ def loop():
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
 
         batch = mem.get_minibatch()
-
         vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
         value_losses.append(vl)
         policy_losses.append(pl)

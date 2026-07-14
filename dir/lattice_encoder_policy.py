@@ -53,7 +53,7 @@ class Policy(nn.Module):
                     self.extra_colv.unsqueeze(0).expand(x.size(0), -1, -1)
                     ],
                     dim=1
-                    )
+                    ).float()
     inp = self.encoder(inp)
 
     #compute logits and p

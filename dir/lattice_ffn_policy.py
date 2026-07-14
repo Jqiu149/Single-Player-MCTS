@@ -22,7 +22,7 @@ class Policy(nn.Module):
 
     # assuming obs is a tensor ig? batch_size many inputs ig?
     def forward(self, obs):
-        inp = obs.reshape(obs.shape[0], -1)
+        inp = obs.reshape(obs.shape[0], -1).float()
         
         h_relu = F.relu(self.dense1(inp))
 

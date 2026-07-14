@@ -444,6 +444,7 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
     total_rew = np.sum(mcts.rewards)
 
     obs = np.concatenate(mcts.obs)
+
     return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state)
 
 
