@@ -3,19 +3,19 @@ from ..static_env import StaticEnv
 
 START_VECTORS = [ np.array([1,2]), np.array([0,2])]
 
-MAX_STEP = 5
+MAX_STEP = 30
 
 #action list 0
-S = 0
-T = 1
+#S = 0
+#T = 1
 
-num_actions = 2
+#num_actions = 2
 
 #action list 1
-#END = 0
-#S = 1
-#T = 2
-#num_actions = 3
+END = 0
+S = 1
+T = 2
+num_actions = 3
 
 #action list 2
 #END=0
@@ -44,11 +44,11 @@ class Env(StaticEnv):
 
 		v0, v1, done = state 
 
-#		 if(action == END):
-#           done = True
-#			 return state	
-
-		if(action== S):
+		if(action == END):
+			new_v0 = v0.copy()
+			new_v1 = v1.copy()
+			done = True
+		elif(action== S):
 			new_v0 = -v1
 			new_v1 = v0.copy()
 		elif(action == T):

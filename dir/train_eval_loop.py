@@ -32,33 +32,33 @@ from .mcts import execute_episode_eval
 #+++++++++++++
 
 
-from .lattice_ffn_policy import Policy
-from .lattice_2d_env_magnitude.env import Env
-
-n_vectors = 2
-vector_dim = 2
-n_hidden_dim= 20
-n_actions = 2
-
-trainer=Trainer( lambda: Policy(n_vectors, vector_dim, n_hidden_dim, n_actions))
-
-
-obs_shape = [n_vectors, vector_dim]
-#+++++++++++++++
-
-#from .lattice_encoder_policy import Policy
+#from .lattice_ffn_policy import Policy
 #from .lattice_2d_env_magnitude.env import Env
 #
-#n_enc_layers = 6  
 #n_vectors = 2
-#vector_dim = 2 
-#encoder_nhead=2 # needs to divide vector_dim...
-#n_actions=2
+#vector_dim = 2
+#n_hidden_dim= 20
+#n_actions = 3
 #
-#trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+#trainer=Trainer( lambda: Policy(n_vectors, vector_dim, n_hidden_dim, n_actions))
 #
 #
 #obs_shape = [n_vectors, vector_dim]
+#+++++++++++++++
+
+from .lattice_encoder_policy import Policy
+from .lattice_2d_env_magnitude.env import Env
+
+n_enc_layers = 6  
+n_vectors = 2
+vector_dim = 2 
+encoder_nhead=2 # needs to divide vector_dim...
+n_actions=3
+
+trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+
+
+obs_shape = [n_vectors, vector_dim]
 #++++++++++++
 
 
@@ -99,6 +99,7 @@ def test_agent():
                                                                  Env )
     print("observation list:")
     print(obs)
+    print(action_list)
     print(f"final state: {done_state}")
     return reward
 

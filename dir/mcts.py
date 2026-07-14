@@ -11,7 +11,7 @@ import numpy as np
 
 # Exploration constant
 #originally set to 1.38
-c_PUCT = 1.38
+c_PUCT = 1.40
 # Dirichlet noise alpha parameter.
 #original value is 0.03
 D_NOISE_ALPHA = 0.03
