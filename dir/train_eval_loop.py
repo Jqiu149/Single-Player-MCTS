@@ -18,6 +18,19 @@ parser.add_argument("--exp_name", type=str, default="debug",help="Experiment nam
 parser.add_argument("--save_periodic", type=int, default=0,help="Save the model periodically (0 to disable)")
 parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
 
+parser.add_argument("--num_simulations", type=int, default=50, help="number of simulations before a step is taken in MCTS")
+
+
+parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
+
+parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
+
+parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many iterations to run when evaluating the model")
+
+
+
+
+
 
 parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
 parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
@@ -96,11 +109,9 @@ network = trainer.step_model
 # actual train_eval loop stuff is below here ig
 
 
-num_simulations = 15
+num_simulations = 50
 memory_size = 200
 num_eval_iterations = 1
-
-
 
 
 mem = ReplayMemory(memory_size,
