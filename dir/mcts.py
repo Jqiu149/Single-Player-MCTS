@@ -23,6 +23,7 @@ D_NOISE_ALPHA = 0.03
 TEMP_THRESHOLD = 5
 
 
+
 class DummyNode:
     """
     Special node that is used as the node above the initial root node to
@@ -463,7 +464,8 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
 
 #.... i think we can still use the information from this for training. maybe i'm wrong...
 def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
-
+    global TEMP_THRESHOLD
+    original_TEMP_THRESHOLD = TEMP_THRESHOLD 
     TEMP_THRESHOLD = -1
 
     mcts = MCTS(agent_netw, TreeEnv)
@@ -505,5 +507,11 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
     total_rew = np.sum(mcts.rewards)
 
     obs = np.concatenate(mcts.obs)
+
+
+
+    TEMP_THRESHOLD = original_TEMP_THRESHOLD 
+
+
     return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state, action_list)
 
