@@ -23,7 +23,6 @@ parser.add_argument("--num_simulations", type=int, default=50, help="number of s
 
 parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
 
-parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
 
 parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many iterations to run when evaluating the model")
 
@@ -65,33 +64,33 @@ parser.add_argument("--n_layers", type=int, default=6, help="number of layers us
 #+++++++++++++
 
 
-#from .lattice_ffn_policy import Policy
-#from .lattice_2d_env_magnitude.env import Env
-#
-#n_vectors = 2
-#vector_dim = 2
-#n_hidden_dim= 20
-#n_actions = 3
-#
-#trainer=Trainer( lambda: Policy(n_vectors, vector_dim, n_hidden_dim, n_actions))
-#
-#
-#obs_shape = [n_vectors, vector_dim]
-#+++++++++++++++
+from .lattice_ffn_policy import Policy
+from .lattice_env import Env
 
-from .lattice_encoder_policy import Policy
-from .lattice_2d_env_magnitude.env import Env
-
-n_enc_layers = 6  
 n_vectors = 2
-vector_dim = 2 
-encoder_nhead=2 # needs to divide vector_dim...
-n_actions=3
+vector_dim = 2
+n_hidden_dim= 20
+n_actions = 3
 
-trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+trainer=Trainer( lambda: Policy(n_vectors, vector_dim, n_hidden_dim, n_actions))
 
 
 obs_shape = [n_vectors, vector_dim]
+#+++++++++++++++
+
+#from .lattice_encoder_policy import Policy
+#from .lattice_env.env import Env
+#
+#n_enc_layers = 6  
+#n_vectors = 2
+#vector_dim = 2 
+#encoder_nhead=2 # needs to divide vector_dim...
+#n_actions=3
+#
+#trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions))
+#
+#
+#obs_shape = [n_vectors, vector_dim]
 #++++++++++++
 
 
