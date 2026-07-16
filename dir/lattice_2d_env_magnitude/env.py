@@ -1,7 +1,7 @@
 import numpy as np
 from ..static_env import StaticEnv
 
-START_VECTORS = [ np.array([1,2]), np.array([0,2])]
+START_VECTORS = [ np.array([10,7]), np.array([3,2])]
 
 MAX_STEP = 30
 

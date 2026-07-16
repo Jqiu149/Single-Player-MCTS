@@ -7,6 +7,26 @@ from .mcts import execute_episode
 from .mcts import execute_episode_eval
 
 
+import argparse
+parser = argparse.ArgumentParser()
+
+
+
+
+parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")
+parser.add_argument("--exp_name", type=str, default="debug",help="Experiment name")
+parser.add_argument("--save_periodic", type=int, default=0,help="Save the model periodically (0 to disable)")
+parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
+
+
+parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
+parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
+
+
+parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
+
+parser.add_argument("--n_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
+
 
 
 
@@ -116,10 +136,10 @@ def loop():
             
             print(f"step{i}, avg reward: {total_reward/num_eval_iterations}")
             
-            plt.plot(value_losses, label="value loss")
-            plt.plot(policy_losses, label="policy loss")
-            plt.legend()
-            plt.show()
+#            plt.plot(value_losses, label="value loss")
+#            plt.plot(policy_losses, label="policy loss")
+#            plt.legend()
+#            plt.show()
 
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  num_simulations,
