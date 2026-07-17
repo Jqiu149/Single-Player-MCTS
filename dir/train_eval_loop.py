@@ -22,7 +22,7 @@ parser.add_argument("--reload_model", type=str, default="",help="path to model t
 
 parser.add_argument("--save_periodic", type=int, default=0,help="Save the model periodically (0 to disable)")
 
-parser.add_argument("--num_simulations", type=int, default=50, help="number of simulations before a step is taken in MCTS")
+parser.add_argument("--num_simulations", type=int, default=300, help="number of simulations before a step is taken in MCTS")
 
 
 parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
@@ -48,8 +48,8 @@ assert args.dump_path != "" and args.exp_name != "" and args.exp_id !="", "one o
 
 assert args.batch_size < args.memory_size
 
-model_save_state_dir= args.dump_path + "/" + args.exp_name + "/"
-model_save_state_path = model_save_state_dir + args.exp_id + ".pth"
+model_save_state_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
+model_save_state_path = model_save_state_dir + "checkpoint.pth"
 model_load_path = args.reload_path if args.reload_model!="" else model_save_state_path
 
 

@@ -35,7 +35,7 @@ class PositionalEncoding(nn.Module):
 class Policy(nn.Module):
   def __init__(self, num_encoder_layers, vector_dim, encoder_nhead, num_actions):
     super().__init__()
-    self.pos_encoder = PositionalEncoding(vector_dim)
+    self.pos_emb= PositionalEncoding(vector_dim)
 
     encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead)
     self.encoder = transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
@@ -54,6 +54,7 @@ class Policy(nn.Module):
                     ],
                     dim=1
                     ).float()
+    inp = self.pos_emb(inp)
     inp = self.encoder(inp)
 
     #compute logits and p
