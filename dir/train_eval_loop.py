@@ -38,7 +38,6 @@ parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used
 
 
 parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
-
 parser.add_argument("--n_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
 
 
@@ -120,6 +119,9 @@ mem = ReplayMemory(args.memory_size,
 
 
 def test_agent(num_iterations):
+    network.eval()
+    total_reward= 0
+
     for i in range(num_iterations):
         obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                  args.num_simulations,
@@ -128,7 +130,11 @@ def test_agent(num_iterations):
         print(obs)
         print(action_list)
         print(f"final state: {done_state}")
+
+        total_reward+=reward
     
+
+    print(f"avg_reward:{total_reward/num_iterations}")
     
           
 
@@ -136,7 +142,7 @@ def loop():
     value_losses = []
     policy_losses = []
 
-    for i in range(1,201):
+    for i in range(1,20001):
         if i % args.eval_freq== 0:
             test_agent(num_eval_iterations)
             

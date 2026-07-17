@@ -17,17 +17,45 @@ S = 1
 T = 2
 num_actions = 3
 
-#action list 2
-#END=0
-#ADD_TO_v1 = 1
-#SUBTRACT_FROM_V1 = 2
-#ADD_TO_v2 = 3
-#SUBTRACT_FROM_V2 = 4
 
-#num_actions = 5
+
+def LagrangeReduce(v1,v2):
+    assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+    assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+
+    # just for concenience for element wise operation notation... probably easier ways to do this
+    norm1Squared = np.dot(v1,v1) 
+    norm2Squared = np.dot(v2,v2) 
+
+    done = False
+    stepCount = 0
+    while(not done):
+        stepCount+=1
+
+        if(norm1Squared> norm2Squared):
+            v1,v2 = v2,v1
+            norm1Squared,norm2Squared = norm2Squared,norm1Squared
+
+        u = round( (np.dot(v1,v2))/ norm1Squared)
+        v2 = v2-u*v1
+        norm2Squared= np.dot(v2,v2) 
+
+        if(norm1Squared<= norm2Squared):
+            done = True
+
+    return [v1, v2]
+
+
+
+
+
 
 	
-#states will be list of 2 np arrays of the same dim and a boolean.
+#states will be list of...
+#2 np arrays of legnth 2 (2 linearly indep vectors of dim 2)
+#the magnitude of the smallest vector in the lattice determined by those vectors
+#and a boolean 'done' that the agent can set to true to finish the episode
+
 
 class Env(StaticEnv):
 	n_actions= num_actions
@@ -42,7 +70,7 @@ class Env(StaticEnv):
 		:return: Resulting state.
 		"""
 
-		v0, v1, done = state 
+		v0, v1,m,done = state 
 
 		if(action == END):
 			new_v0 = v0.copy()
@@ -57,7 +85,7 @@ class Env(StaticEnv):
 		else:
 			raise ValueError(f"given action, {action}, is unknown")
 
-		return [new_v0, new_v1,done]
+		return [new_v0, new_v1,m, done]
 
 # i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
 	@staticmethod
@@ -69,16 +97,20 @@ class Env(StaticEnv):
 		:param step_idx: Index of the step at which the state occurred.
 		:return: True, if the step is a done state, False otherwise.
 		"""	
-		#if (state[2] == True or step_idx >= MAX_STEP): print("done")
-		#print(step_idx)
-		return state[2] == True or step_idx >= MAX_STEP
+		return state[-1] == True or step_idx >= MAX_STEP
 
 	@staticmethod
 	def initial_state():
 		"""
 		Returns the initial state of the environment.
 		"""
-		return START_VECTORS+ [False]
+		start_vector = START_VECTORS
+		smallest_vector = LagrangeReduce(start_vector[0], start_vector[1])[0]
+		smallest_m = np.linalg.norm(smallest_vector)
+
+
+		return START_VECTORS+ [smallest_m, False]
+
 	@staticmethod
 	def get_obs_for_states(states):
 		"""
@@ -89,7 +121,7 @@ class Env(StaticEnv):
 		:param states: List of states.
 		:return: Numpy array of observations.
 		"""
-		x = np.array([ state[0:-1] for state in states],dtype=np.float32)
+		x = np.array([ state[0:-2] for state in states],dtype=np.float32)
 		return x
 
 	@staticmethod
@@ -103,5 +135,8 @@ class Env(StaticEnv):
 		:return: Return the agent has achieved so far.
 		"""
 
-		magnitudes = [np.linalg.norm( v) for v in state[0:-1]]
-		return -min(magnitudes)
+		magnitudes = [np.linalg.norm(v) for v in state[0:-2]]
+		return ( state[-2]/min(magnitudes))
+
+
+
