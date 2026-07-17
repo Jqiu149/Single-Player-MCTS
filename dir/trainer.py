@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+from pathlib import Path
 
 class Trainer:
     """
@@ -15,9 +16,12 @@ class Trainer:
     #learning rate is the one used in optimzer
 
 
-    def __init__(self, Policy, learning_rate=0.1):
+    def __init__(self, Policy, model_path="",  learning_rate=0.1):
 
         self.step_model = Policy()
+        if(model_path != "" and Path(model_path).is_file() ):
+           self.step_model.load_state_dict(torch.load(model_path, weights_only=True)) 
+           print("loaded_model")
 
         value_criterion = nn.MSELoss()
         optimizer = torch.optim.SGD(self.step_model.parameters(),
@@ -28,6 +32,8 @@ class Trainer:
         #observations/state, search_pis, returns are ig the probabilities and values fromMCTS that are being used as targets in trainign
         #ig assuming that are numpy objects
         def train(obs, search_pis, returns):
+            self.step_model.train()
+            
             obs = torch.from_numpy(obs)
             search_pis = torch.from_numpy(search_pis)
             returns = torch.from_numpy(returns)
