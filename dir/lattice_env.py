@@ -136,7 +136,7 @@ class Env(StaticEnv):
 		"""
 
 		magnitudes = [np.linalg.norm(v) for v in state[0:-2]]
-		return ( state[-2]/min(magnitudes)) -0.0001*step_idx
+		return ( state[-2]/min(magnitudes))**2 -0.0001*step_idx
 
 
 
