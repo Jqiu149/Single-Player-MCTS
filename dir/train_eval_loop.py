@@ -147,10 +147,10 @@ def loop():
             test_agent(num_eval_iterations)
             
             
-#            plt.plot(value_losses, label="value loss")
-#            plt.plot(policy_losses, label="policy loss")
-#            plt.legend()
-#            plt.show()
+            plt.plot(value_losses, label="value loss")
+            plt.plot(policy_losses, label="policy loss")
+            plt.legend()
+            plt.show()
 
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  args.num_simulations,
