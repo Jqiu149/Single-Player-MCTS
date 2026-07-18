@@ -1,54 +1,109 @@
 import numpy as np
+import random
 from .static_env import StaticEnv
 
-START_VECTORS = [ np.array([100,70]), np.array([50,50])]
 
+
+#what do we want? 
+# we want to be able to specify either a specific starting basis, or a list of bases to be the starting state for training?
+#or a function for specifying vectors to choose as basis 
+
+
+#for if we have a specific list we want to take from
+
+#set this to the list you want to be taking from, the value set below is more of an example / default ig
+#should be a list of lists of 2 of np arrays of 2 integers
+basis_list = [
+		[np.array([1,2]), np.array([0,2])],
+		[np.array([1,2]), np.array([3,4])],
+		[np.array([100, 70]), np.array([50,50])]
+		]
+
+def pick_from_basis_list():
+	return random.choice(basis_list)
+
+
+def pairVectorsR2LinearIndep(v1,v2):
+		return	v1[0]*v2[1] != v2[0]*v1[1]
+
+def polarToCartesian( angle, magnitude): 
+	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
+
+
+def logUniformReal(maxint):
+	return	10** (np.log10(maxint)*np.random.rand())
+
+#for if you want to choose a basis randomly
+#will generate a pair of linearly independent 2d integer vectors 
+# we'll probably need to work on this to like check if we're hapy with the distribution this guves but... for now it will probably maybe run?
+def random_basis(m=100,minAngleDiff=0,maxAngleDiff=2*np.pi):
+	m1 = logUniformReal(m) 
+	m2 = logUniformReal(m)
+	a1 = random.uniform(0, 2*np.pi)
+	a2 = a1+random.uniform(minAngleDiff,maxAngleDiff)
+
+
+	v1 = [int(x) for x in polarToCartesian(a1, m1)]
+	v2 = [int(x) for x in polarToCartesian(a2, m2)]
+
+	if(v1 == [0,0]):
+	  v1[0] = 1
+
+	counter = 0
+	while( not pairVectorsR2LinearIndep(v1, v2)):
+		m2 = logUniformReal(m)
+		a2 = a1+random.uniform(minAngleDiff, maxAngleDiff) 
+		if random.uniform(0,1)> 0.5 :
+			a2 += np.pi
+		v2 = [int(x) for x in polarToCartesian(a2, m2)]
+		counter+=1
+		if(counter >1000):
+			raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
+
+	return [np.array(v1), np.array(v2)]
+
+
+
+
+
+
+basis_generator = random_basis
 MAX_STEP = 30
-
-#action list 0
-#S = 0
-#T = 1
-
-#num_actions = 2
-
-#action list 1
-END = 0
-S = 1
-T = 2
-num_actions = 3
 
 
 
 def LagrangeReduce(v1,v2):
-    assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
-    assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+	assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+	assert pairVectorsR2LinearIndep(v1,v2)
 
-    # just for concenience for element wise operation notation... probably easier ways to do this
-    norm1Squared = np.dot(v1,v1) 
-    norm2Squared = np.dot(v2,v2) 
+	norm1Squared = np.dot(v1,v1) 
+	norm2Squared = np.dot(v2,v2) 
 
-    done = False
-    stepCount = 0
-    while(not done):
-        stepCount+=1
+	done = False
+	stepCount = 0
+	while(not done):
+		stepCount+=1
 
-        if(norm1Squared> norm2Squared):
-            v1,v2 = v2,v1
-            norm1Squared,norm2Squared = norm2Squared,norm1Squared
+		if(norm1Squared> norm2Squared):
+			v1,v2 = v2,v1
+			norm1Squared,norm2Squared = norm2Squared,norm1Squared
 
-        u = round( (np.dot(v1,v2))/ norm1Squared)
-        v2 = v2-u*v1
-        norm2Squared= np.dot(v2,v2) 
+		u = round( (np.dot(v1,v2))/ norm1Squared)
+		v2 = v2-u*v1
+		norm2Squared= np.dot(v2,v2) 
 
-        if(norm1Squared<= norm2Squared):
-            done = True
+		if(norm1Squared<= norm2Squared):
+			done = True
 
-    return [v1, v2]
-
-
+	return [v1, v2]
 
 
 
+
+END = 0
+S = 1
+T = 2
 
 	
 #states will be list of...
@@ -58,7 +113,7 @@ def LagrangeReduce(v1,v2):
 
 
 class Env(StaticEnv):
-	n_actions= num_actions
+	n_actions= 3
 
 	@staticmethod
 	def next_state(state, action):
@@ -104,12 +159,12 @@ class Env(StaticEnv):
 		"""
 		Returns the initial state of the environment.
 		"""
-		start_vector = START_VECTORS
-		smallest_vector = LagrangeReduce(start_vector[0], start_vector[1])[0]
+		start_basis= basis_generator()
+		smallest_vector = LagrangeReduce(start_basis[0], start_basis[1])[0]
 		smallest_m = np.linalg.norm(smallest_vector)
 
 
-		return START_VECTORS+ [smallest_m, False]
+		return start_basis+ [smallest_m, False]
 
 	@staticmethod
 	def get_obs_for_states(states):
