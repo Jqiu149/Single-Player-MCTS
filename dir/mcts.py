@@ -11,7 +11,14 @@ import numpy as np
 
 # Exploration constant
 #originally set to 1.38
-c_PUCT = 1.40
+#maybe was 2.4 for chess for alphazero?
+
+    #kinda think about if like... maybe should be scaled with the number of actions
+    #cus the more actions, on average ig would assume probability score is lower for each, so... idk value of the second term needs to be scaled by more? 
+    #apparently this isn't actually a constant and should be changing .............?
+    # grow as like size of tree grows or smth
+
+c_PUCT = 1.4
 # Dirichlet noise alpha parameter.
 #original value is 0.03
 D_NOISE_ALPHA = 0.03
@@ -439,7 +446,7 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for i
+    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth-i) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)
@@ -501,7 +508,7 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth) for i
+    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth-i) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)

@@ -36,6 +36,7 @@ parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many
 parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
 parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
 
+#probably smth about the optimizer and/or decay?
 
 parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
 parser.add_argument("--n_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
@@ -166,3 +167,8 @@ def loop():
 
     pathlib.Path(model_save_state_dir).mkdir(parents=True, exist_ok=True)
     torch.save(network.state_dict(), model_save_state_path)
+    #what the command / settings you chose were...
+    #logs of how trianing going....?
+    #   ig return average + maybe other statistics related to it?
+    #    
+    # hoenstly maybe the memory guy actually... 
