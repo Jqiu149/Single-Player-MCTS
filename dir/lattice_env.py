@@ -16,7 +16,8 @@ from .static_env import StaticEnv
 basis_list = [
 		[np.array([1,2]), np.array([0,2])],
 		[np.array([1,2]), np.array([3,4])],
-		[np.array([100, 70]), np.array([50,50])]
+		[np.array([100, 70]), np.array([50,50])],
+		[np.array([349,-300]), np.array([49,-50])]
 		]
 
 def pick_from_basis_list():
@@ -63,12 +64,33 @@ def random_basis(m=100,minAngleDiff=0,maxAngleDiff=2*np.pi):
 	return [np.array(v1), np.array(v2)]
 
 
+#used to set the value of basis generator
+# for method...
+# give "default_list" to be using the existing basis_list defined above
+# "random_generator" to use the random_basis function
+# "custom_list" to use the list 
+def select_init_method(method, custom_list): 
+	if method == "default":
+		basis_generator = pick_from_basis_list
+	elif method == "random_generator":
+		basis_generator = random_basis
+	elif method == "custom_list":
+		assert np.shape(custom_list)[1:] == (2,2), f"custom_list shape is {np.shape(custom_list)}"
+		custom_list = [ [np.array(vector) for vector in vector_list ] for vector_list in custom_list]
 
+		assert all( pairVectorsR2LinearIndep(basis_vectors[0],basis_vectors[1]) for basis_vectors in custom_list)
 
+		global basis_list
+		basis_list = custom_list
 
+		print("basis_list is:", basis_list)
 
-basis_generator = random_basis
-MAX_STEP = 30
+		basis_generator = pick_from_basis_list
+	else:
+		ValueError (f"method chosen isn't one of the options, given {method}")
+
+basis_generator= pick_from_basis_list
+MAX_STEP = 50
 
 
 
@@ -159,6 +181,7 @@ class Env(StaticEnv):
 		"""
 		Returns the initial state of the environment.
 		"""
+		
 		start_basis= basis_generator()
 		smallest_vector = LagrangeReduce(start_basis[0], start_basis[1])[0]
 		smallest_m = np.linalg.norm(smallest_vector)

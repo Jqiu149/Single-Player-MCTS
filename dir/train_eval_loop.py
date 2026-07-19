@@ -10,12 +10,22 @@ from .mcts import execute_episode_eval
 
 
 import argparse
+import json
 parser = argparse.ArgumentParser()
 
 
 parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")
 parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
 parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
+
+
+parser.add_argument('--eval_only', action='store_true')
+
+parser.add_argument("--init_method", type=str, default="default", 
+    help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options
+    """)
+
+parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes")
 
 
 parser.add_argument("--reload_model", type=str, default="",help="path to model to be loaded. ignored if it's an empty string")
@@ -80,7 +90,7 @@ model_load_path = args.reload_path if args.reload_model!="" else model_save_stat
 #+++++++++++++++
 
 from .lattice_encoder_policy import Policy
-from .lattice_env import Env
+from .lattice_env import Env, select_init_method
 
 n_enc_layers = 6  
 n_vectors = 2
@@ -98,14 +108,10 @@ obs_shape = [n_vectors, vector_dim]
 network = trainer.step_model
 
 
-
-#----------------
-
 # actual train_eval loop stuff is below here ig
 
 
-
-
+select_init_method(args.init_method, args.custom_init_list)
 
 num_eval_iterations = 1
 
