@@ -5,7 +5,8 @@ from torch import nn, Tensor
 import numpy as n
 import torch.nn.functional as F
 
-device = torch.accelerator.current_accelerator().type() if torch.accelerator.is_available() else "cpu"
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using {device}")
 
 
@@ -48,6 +49,7 @@ class Policy(nn.Module):
     self.extra_colv =  nn.Parameter(torch.randn(vector_dim))
 
   def forward(self,x):
+    x= x.to(device)
     inp = torch.cat([x,
                     self.extra_colp.unsqueeze(0).expand(x.size(0), -1, -1),
                     self.extra_colv.unsqueeze(0).expand(x.size(0), -1, -1)
@@ -76,4 +78,4 @@ class Policy(nn.Module):
     obs = torch.from_numpy(obs)
     _, pi, v = self.forward(obs)
 
-    return pi.detach().numpy(), v.detach().numpy()
+    return pi.detach().cpu().numpy(), v.detach().cpu().numpy()
