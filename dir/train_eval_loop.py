@@ -5,93 +5,47 @@ import pathlib
 
 from .trainer import Trainer 
 from .replay_memory import ReplayMemory
+from . import mcts
 from .mcts import execute_episode
 from .mcts import execute_episode_eval
 
-
-import argparse
-import json
-parser = argparse.ArgumentParser()
-
-
-parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")
-parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
-parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
-
-
-parser.add_argument('--eval_only', action='store_true')
-
-parser.add_argument("--init_method", type=str, default="default", 
-    help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options
-    """)
-
-parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes")
-
-
-parser.add_argument("--reload_model", type=str, default="",help="path to model to be loaded. ignored if it's an empty string")
-
-parser.add_argument("--save_periodic", type=int, default=0,help="Save the model periodically (0 to disable)")
-
-parser.add_argument("--num_simulations", type=int, default=300, help="number of simulations before a step is taken in MCTS")
-
-
-parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
-
-
-parser.add_argument("--eval_freq", type=int, default=50, help="how often should we evaluate the model")
-parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many iterations to run when evaluating the model")
+from .lattice_encoder_policy import Policy
+from . import lattice_env as env_module
+from .lattice_env import Env, select_init_method
 
 
 
-parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
-parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
-
-#probably smth about the optimizer and/or decay?
-
-parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
-parser.add_argument("--n_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
+from .input_reading import get_input
 
 
-args = parser.parse_args()
+
+args =get_input()
 
 
+#file and log stuff
 assert args.dump_path != "" and args.exp_name != "" and args.exp_id !="", "one of dump_path, exp_name, exp_id wasn't specified"
 
 assert args.batch_size < args.memory_size
 
-model_save_state_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
-model_save_state_path = model_save_state_dir + "checkpoint.pth"
+save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
+model_save_state_path = save_dir+ "checkpoint.pth"
 model_load_path = args.reload_path if args.reload_model!="" else model_save_state_path
 
 
 
-# setup traininer ( which is just choose your policy and pass in paramaters to it
-# -------------
-#ig we'll just change this whenever we want to test different thing?
+
+#environment settings
+select_init_method(args.init_method, args.custom_init_list)
+assert args.max_step >0
+env_module.MAX_STEP = args.max_step
 
 
 
-#++++++++++++++
-
-#from .hill_climbing_example.policy import HillClimbingPolicy as Policy
-#from .hill_climbing_example.hill_climbing_env import HillClimbingEnv as Env
-#n_actions = 4
-#n_obs = 49 #... only needed for thier policy netowrk...
-#
-#trainer = Trainer(lambda: Policy(n_obs, 20, n_actions)) # how we initalize netowrk dependson our netwrok.....
-#
-
-#obs_shape = []
-
-#+++++++++++++
+#mcts settings
+mcts.C_PUCT = args.c_puct
 
 
-
-#+++++++++++++++
-
-from .lattice_encoder_policy import Policy
-from .lattice_env import Env, select_init_method
-
+#policy settings
 n_enc_layers = 6  
 n_vectors = 2
 vector_dim = 2 
@@ -105,16 +59,16 @@ obs_shape = [n_vectors, vector_dim]
 
 
 
+
 network = trainer.step_model
 
 
 # actual train_eval loop stuff is below here ig
 
 
-select_init_method(args.init_method, args.custom_init_list)
+
 
 num_eval_iterations = 1
-
 mem = ReplayMemory(args.memory_size,
                    { "ob": np.long,
                      "pi": np.float32,
@@ -149,7 +103,7 @@ def loop():
     value_losses = []
     policy_losses = []
 
-    for i in range(1,20001):
+    for i in range(1,201):
         if i % args.eval_freq== 0:
             test_agent(num_eval_iterations)
             
@@ -171,8 +125,10 @@ def loop():
 
     
 
-    pathlib.Path(model_save_state_dir).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
     torch.save(network.state_dict(), model_save_state_path)
+
+
     #what the command / settings you chose were...
     #logs of how trianing going....?
     #   ig return average + maybe other statistics related to it?

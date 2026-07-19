@@ -17,8 +17,7 @@ import numpy as np
     #cus the more actions, on average ig would assume probability score is lower for each, so... idk value of the second term needs to be scaled by more? 
     #apparently this isn't actually a constant and should be changing .............?
     # grow as like size of tree grows or smth
-
-c_PUCT = 1.4
+c_PUCT = 2
 # Dirichlet noise alpha parameter.
 #original value is 0.03
 D_NOISE_ALPHA = 0.03
@@ -27,7 +26,7 @@ D_NOISE_ALPHA = 0.03
 # action with highest action probability rather than selecting randomly
 
 #originally this was 5
-TEMP_THRESHOLD = 5
+TEMP_THRESHOLD = 50
 
 
 

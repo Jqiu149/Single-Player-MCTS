@@ -90,7 +90,7 @@ def select_init_method(method, custom_list):
 		ValueError (f"method chosen isn't one of the options, given {method}")
 
 basis_generator= pick_from_basis_list
-MAX_STEP = 50
+MAX_STEP = 75
 
 
 
@@ -167,6 +167,7 @@ class Env(StaticEnv):
 # i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
 	@staticmethod
 	def is_done_state(state, step_idx):
+
 		"""
 		Given the state and the index of the current step, returns whether
 		that state is the end of an episode, i.e. a done state.
