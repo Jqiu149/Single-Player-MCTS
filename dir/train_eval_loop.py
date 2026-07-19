@@ -29,7 +29,7 @@ assert args.batch_size < args.memory_size
 
 save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
 model_save_state_path = save_dir+ "checkpoint.pth"
-model_load_path = args.reload_path if args.reload_model!="" else model_save_state_path
+model_load_path = args.reload_model if args.reload_model!="" else model_save_state_path
 
 
 
