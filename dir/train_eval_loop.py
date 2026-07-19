@@ -28,6 +28,8 @@ assert args.dump_path != "" and args.exp_name != "" and args.exp_id !="", "one o
 assert args.batch_size < args.memory_size
 
 save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
+log_file_path = save_dir + "log_file.txt"
+
 model_save_state_path = save_dir+ "checkpoint.pth"
 model_load_path = args.reload_model if args.reload_model!="" else model_save_state_path
 
@@ -81,7 +83,7 @@ mem = ReplayMemory(args.memory_size,
 
 def test_agent(num_iterations):
     network.eval()
-    total_reward= 0
+    reward_list = []
 
     for i in range(num_iterations):
         obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
@@ -92,10 +94,14 @@ def test_agent(num_iterations):
         print(action_list)
         print(f"final state: {done_state}")
 
-        total_reward+=reward
-    
+        reward_list.append(reward)
 
-    print(f"avg_reward:{total_reward/num_iterations}")
+    mean_reward= np.mean(reward_list)          
+    std_reward = np.std(reward_list)            
+    min_reward = np.min(reward_list)            
+    max_reward = np.max(reward_list)            
+
+    print(f"avg_reward:{mean_val}")
     
           
 
@@ -127,6 +133,8 @@ def loop():
 
     pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
     torch.save(network.state_dict(), model_save_state_path)
+
+
 
 
     #what the command / settings you chose were...

@@ -12,15 +12,17 @@ def get_input():
     parser.add_argument("--init_method", type=str, default="default", 
         help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options
         """)
-    parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes")
+    parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes. so eg \"[ [[1,2], [3,4]], [[5,6],[7,8]] ]\" ")
+
+    parser.add_argument('--custom_init_list_path', type ="str", help ="use with --init_method set to 3. pass in the path to a file where each line is a possible starting input")
     parser.add_argument("--max_step", type=int, default=50, 
         help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
 
 
 
-    parser.add_argument("--num_simulations", type=int, default=300, help="number of simulations before a step is taken in MCTS")
+    parser.add_argument("--num_simulations", type=int, default=200, help="number of simulations before a step is taken in MCTS")
 
-    parser.add_argument("--c_puct", type= float, default = 2)
+    parser.add_argument("--c_puct", type= float, default = 1.38)
 
 
     parser.add_argument("--reload_model", type=str, default="",help="path to model to be loaded. ignored if it's an empty string")
