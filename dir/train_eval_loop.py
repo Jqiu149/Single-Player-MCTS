@@ -48,13 +48,12 @@ mcts.C_PUCT = args.c_puct
 
 
 #policy settings
-n_enc_layers = 6  
 n_vectors = 2
 vector_dim = 2 
 encoder_nhead=2 # needs to divide vector_dim...
 n_actions=3
 
-trainer=trainer=Trainer( lambda: Policy(n_enc_layers, vector_dim, encoder_nhead, n_actions), model_path=model_load_path )
+trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), model_path=model_load_path )
 
 obs_shape = [n_vectors, vector_dim]
 #++++++++++++
@@ -101,24 +100,16 @@ def test_agent(num_iterations):
     min_reward = np.min(reward_list)            
     max_reward = np.max(reward_list)            
 
-    print(f"avg_reward:{mean_val}")
-    
-          
+    print(f"avg_reward:{mean_reward}") 
+    print(f"std_reward:{mean_reward}")      
+    print(f"min_reward:{mean_reward}")
+    print(f"max_reward:{mean_reward}")
 
 def loop():
     value_losses = []
     policy_losses = []
 
-    for i in range(1,201):
-        if i % args.eval_freq== 0:
-            test_agent(num_eval_iterations)
-            
-            
-            plt.plot(value_losses, label="value loss")
-            plt.plot(policy_losses, label="policy loss")
-            plt.legend()
-            plt.show()
-
+    for i in range(1,args.num_train_episodes+1):
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  args.num_simulations,
                                                                  Env)
@@ -129,7 +120,10 @@ def loop():
         value_losses.append(vl)
         policy_losses.append(pl)
 
-    
+        if i % args.eval_freq== 0:
+            test_agent(num_eval_iterations)
+            
+        
 
     pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
     torch.save(network.state_dict(), model_save_state_path)
