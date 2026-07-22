@@ -118,14 +118,15 @@ def test_agent(num_iterations,current_train_episode):
     print(f"std_reward:{std_reward}")      
     print(f"min_reward:{min_reward}")
     print(f"max_reward:{max_reward}")
+    print()
 
     with open(log_file_path, "a") as log_file:
         print("train_episode:", current_train_episode,file= log_file)
         print(f"avg_reward:{mean_reward}",file= log_file) 
         print(f"std_reward:{std_reward}",file= log_file)      
         print(f"min_reward:{min_reward}",file= log_file)
-        print(f"max_reward:{max_reward}",file= log_file)
-
+        print(f"max_reward:{max_reward}",file= log_file) 
+        print(file = log_file)
 
     with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
         for i in np.argsort(reward_list):
@@ -141,7 +142,6 @@ def loop():
     try:
         with open(num_train_episodes_file_path, "r") as file:
             start_num_train_episodes = file.readline()
-
     except FileNotFoundError:
         start_num_train_episodes = 0
 
@@ -151,6 +151,7 @@ def loop():
     print(json.dumps(vars(args), indent = 0)[1:-1])
     with open(log_file_path, "a+") as log_file:
         print(json.dumps(vars(args), indent = 0)[1:-1],file = log_file)
+        print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
 
     value_losses = []
@@ -170,7 +171,7 @@ def loop():
 
         #update most recent state
         if i % args.eval_freq== 0: 
-            test_agent(args.num_eval_iterations, start_num_train_episodes+i)
+            test_agent(args.num_eval_iterations, int(start_num_train_episodes)+i)
          
             #update most recent model
             torch.save(network.state_dict(), model_save_state_path)
