@@ -78,13 +78,19 @@ mem = ReplayMemory(args.memory_size,
                      "return": []},
                    batch_size = args.batch_size)
 
+import numpy as np
+
+try:
+    mem.add_all(np.load(memory_file_path,allow_pickle=True).item())
+except FileNotFoundError:
+    print("no previous memory file (data used to train policy) was found. If you're not loading an existing model this is fine. If you are, it's up to you if you care...")
+    
 
 
 
 
-# actual train_eval loop stuff is below here ig
-
-def test_agent(num_iterations,current_train_episode):
+# evaluate and report on current agent state
+def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
     network.eval()
     obs_list = []
     action_list_list= []
@@ -106,42 +112,44 @@ def test_agent(num_iterations,current_train_episode):
         reward_list.append(reward)
         done_state_list.append(done_state)
 
+    indices_sorted_by_reward =np.argsort(reward_list)
     mean_reward= np.mean(reward_list)          
     std_reward = np.std(reward_list)            
-    min_reward = np.min(reward_list)            
-    max_reward = np.max(reward_list)            
+    min_rewards= [ reward_list[i] for i in indices_sorted_by_reward[0:num_min_to_report]]
+    max_rewards = [ reward_list[i] for i in indices_sorted_by_reward[-num_max_to_report:None]]
+
     #maybe want like worst 10 or smth hoesntly 
     # and to hold on to the observations for those 
 
     #also would be nice to be able to get performance on specified subsets of training 
     print(f"avg_reward:{mean_reward}") 
     print(f"std_reward:{std_reward}")      
-    print(f"min_reward:{min_reward}")
-    print(f"max_reward:{max_reward}")
+    print(f"min_rewards:{min_rewards}")
+    print(f"max_rewards:{max_rewards}")
     print()
 
     with open(log_file_path, "a") as log_file:
         print("train_episode:", current_train_episode,file= log_file)
         print(f"avg_reward:{mean_reward}",file= log_file) 
         print(f"std_reward:{std_reward}",file= log_file)      
-        print(f"min_reward:{min_reward}",file= log_file)
-        print(f"max_reward:{max_reward}",file= log_file) 
+        print(f"min_reward:{min_rewards}",file= log_file)
+        print(f"max_reward:{max_rewards}",file= log_file) 
         print(file = log_file)
 
     with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
-        for i in np.argsort(reward_list):
+        for i in indices_sorted_by_reward:
             print("observation list:", file=file)
             print(obs_list[i], file=file)
             print(action_list_list[i], file=file)
             print(reward_list[i], file=file)
             print(f"final state: {done_state_list[i]}", file=file)
 
- 
+
 
 def loop():
     try:
         with open(num_train_episodes_file_path, "r") as file:
-            start_num_train_episodes = file.readline()
+            start_num_train_episodes = int(file.readline())
     except FileNotFoundError:
         start_num_train_episodes = 0
 
@@ -150,7 +158,7 @@ def loop():
 
     print(json.dumps(vars(args), indent = 0)[1:-1])
     with open(log_file_path, "a+") as log_file:
-        print(json.dumps(vars(args), indent = 0)[1:-1],file = log_file)
+        print(json.dumps(vars(args),sort_keys=True, indent = 0)[1:-1],file = log_file)
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
 
@@ -163,6 +171,7 @@ def loop():
                                                                  Env)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
 
+
         batch = mem.get_minibatch()
         vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
         value_losses.append(vl)
@@ -171,7 +180,7 @@ def loop():
 
         #update most recent state
         if i % args.eval_freq== 0: 
-            test_agent(args.num_eval_iterations, int(start_num_train_episodes)+i)
+            test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
          
             #update most recent model
             torch.save(network.state_dict(), model_save_state_path)

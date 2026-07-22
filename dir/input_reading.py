@@ -39,11 +39,17 @@ def get_input():
     parser.add_argument('--custom_init_list_path', type =str, help ="use with --init_method set to 3. pass in the path to a file where each line is a possible starting input", default = "")
 
     parser.add_argument("--max_step", type=int, default=50, 
-        help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
+            help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
+
+
+    #evaluation settings
+    parser.add_argument("--num_min_to_report", type=int, default=1, help="after evaluating, the number of the lowest rewards to report in an evaluation batch")
+
+    parser.add_argument("--num_max_to_report", type=int, default=1, help="after evaluating, the number of the highest rewards to report in an evaluation batch")
 
 
 
-#mcts settings
+    #mcts settings
 
     parser.add_argument("--num_simulations", type=int, default=200, help="number of simulations before a step is taken in MCTS")
 
