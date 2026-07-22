@@ -10,7 +10,7 @@ from . import mcts
 from .mcts import execute_episode
 from .mcts import execute_episode_eval
 
-from .lattice_encoder_policy import Policy
+from .encoder_policy import Policy
 from . import lattice_env as env_module
 from .lattice_env import Env, select_init_method
 
@@ -41,12 +41,15 @@ model_load_path = args.reload_model if args.reload_model!="" else model_save_sta
 
 
 #environment settings
-select_init_method(args.init_method, args.custom_init_list)
+#TODO make it so you can select the environment and ig figure out what other things need to change for those...
 assert args.max_step >0
 env_module.MAX_STEP = args.max_step
+select_init_method(args.init_method, args.custom_init_list)
+
 n_vectors = 2
 vector_dim = 2
 n_actions=3
+obs_shape = [n_vectors, vector_dim]
 
 #mcts settings
 mcts.C_PUCT = args.c_puct
@@ -58,7 +61,6 @@ mcts.TEMP_THRESHOLD=args.temp_threshold
 encoder_nhead=2 # needs to divide vector_dim...
 trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), model_path=model_load_path )
 
-obs_shape = [n_vectors, vector_dim]
 
 
 
