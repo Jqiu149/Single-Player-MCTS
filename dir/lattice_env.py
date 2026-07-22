@@ -37,26 +37,26 @@ def logUniformReal(maxint):
 #for if you want to choose a basis randomly
 #will generate a pair of linearly independent 2d integer vectors 
 # we'll probably need to work on this to like check if we're hapy with the distribution this guves but... for now it will probably maybe run?
-def random_basis(m=100,minAngleDiff=0,maxAngleDiff=2*np.pi):
-	m1 = logUniformReal(m) 
-	m2 = logUniformReal(m)
+def random_basis(m=1000,minAngleDiff=0,maxAngleDiff=2*np.pi):
+	m1 = logUniformReal(m/10) 
+	m2 = logUniformReal(m/10)
 	a1 = random.uniform(0, 2*np.pi)
 	a2 = a1+random.uniform(minAngleDiff,maxAngleDiff)
 
 
-	v1 = [int(x) for x in polarToCartesian(a1, m1)]
-	v2 = [int(x) for x in polarToCartesian(a2, m2)]
+	v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
+	v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
 
 	if(v1 == [0,0]):
 	  v1[0] = 1
 
 	counter = 0
 	while( not pairVectorsR2LinearIndep(v1, v2)):
-		m2 = logUniformReal(m)
+		m2 = logUniformReal(m/10)
 		a2 = a1+random.uniform(minAngleDiff, maxAngleDiff) 
 		if random.uniform(0,1)> 0.5 :
 			a2 += np.pi
-		v2 = [int(x) for x in polarToCartesian(a2, m2)]
+		v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
 		counter+=1
 		if(counter >1000):
 			raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
@@ -70,6 +70,8 @@ def random_basis(m=100,minAngleDiff=0,maxAngleDiff=2*np.pi):
 # "random_generator" to use the random_basis function
 # "custom_list" to use the list 
 def select_init_method(method, custom_list): 
+	global basis_generator
+
 	if method == "default":
 		basis_generator = pick_from_basis_list
 	elif method == "random_generator":
@@ -88,6 +90,7 @@ def select_init_method(method, custom_list):
 		basis_generator = pick_from_basis_list
 	else:
 		ValueError (f"method chosen isn't one of the options, given {method}")
+
 
 basis_generator= pick_from_basis_list
 MAX_STEP = 75

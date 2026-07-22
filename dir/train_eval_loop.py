@@ -91,6 +91,7 @@ def test_agent(num_iterations):
         print("observation list:")
         print(obs)
         print(action_list)
+        print(reward)
         print(f"final state: {done_state}")
 
         reward_list.append(reward)
@@ -100,10 +101,14 @@ def test_agent(num_iterations):
     min_reward = np.min(reward_list)            
     max_reward = np.max(reward_list)            
 
+    #maybe want like worst 10 or smth hoesntly 
+    # and to hold on to the observations for those 
+
+    #also would be nice to be able to get performance on specified subsets of training 
     print(f"avg_reward:{mean_reward}") 
-    print(f"std_reward:{mean_reward}")      
-    print(f"min_reward:{mean_reward}")
-    print(f"max_reward:{mean_reward}")
+    print(f"std_reward:{std_reward}")      
+    print(f"min_reward:{min_reward}")
+    print(f"max_reward:{max_reward}")
 
 def loop():
     value_losses = []
@@ -121,7 +126,7 @@ def loop():
         policy_losses.append(pl)
 
         if i % args.eval_freq== 0:
-            test_agent(num_eval_iterations)
+            test_agent(args.num_eval_iterations)
             
         
 
