@@ -34,10 +34,11 @@ eval_examples_path = save_dir + "eval_"
 memory_file_path = save_dir + "mem.npy"
 model_save_state_path = save_dir+ "checkpoint.pth"
 
-num_train_episodes_file_path = save_dir + "num_train_episodes.txt"
+num_train_episodes_and_losses_file_path = save_dir + "num_train_episodes_and_losses.txt"
 
 
 model_load_path = args.reload_model if args.reload_model!="" else model_save_state_path
+mem_load_path = args.reload_mem if args.reload_mem !="" else memory_file_path
 
 
 #environment settings
@@ -63,14 +64,11 @@ trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhe
 
 
 
-
-
-
 network = trainer.step_model
 #++++++++++++
 
 
-
+#memroy stuff
 mem = ReplayMemory(args.memory_size,
                    { "ob": np.long,
                      "pi": np.float32,
@@ -83,11 +81,10 @@ mem = ReplayMemory(args.memory_size,
 import numpy as np
 
 try:
-    mem.add_all(np.load(memory_file_path,allow_pickle=True).item())
+    mem.add_all(np.load(mem_load_path,allow_pickle=True).item())
 except FileNotFoundError:
     print("no previous memory file (data used to train policy) was found. If you're not loading an existing model this is fine. If you are, it's up to you if you care...")
     
-
 
 
 
@@ -120,8 +117,6 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     min_rewards= [ reward_list[i] for i in indices_sorted_by_reward[0:num_min_to_report]]
     max_rewards = [ reward_list[i] for i in indices_sorted_by_reward[-num_max_to_report:None]]
 
-    #maybe want like worst 10 or smth hoesntly 
-    # and to hold on to the observations for those 
 
     #also would be nice to be able to get performance on specified subsets of training 
     print(f"avg_reward:{mean_reward}") 
@@ -148,24 +143,32 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
 
 
+
 def loop():
+    #figure out how many train_episodes we've done
     try:
-        with open(num_train_episodes_file_path, "r") as file:
+        with open(num_train_episodes_and_losses_file_path, "r") as file:
             start_num_train_episodes = int(file.readline())
+            value_losses=file.readline().split(",")
+            prob_losses=file.readline().split(",")
+
     except FileNotFoundError:
         start_num_train_episodes = 0
+        value_losses = []
+        prob_losses = []
 
     
+    #create folders we're going to store our files in if it doesn't exist
     pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
 
+
+    # print the values of the arguments for this program 
     print(json.dumps(vars(args), indent = 0)[1:-1])
     with open(log_file_path, "a+") as log_file:
         print(json.dumps(vars(args),sort_keys=True, indent = 0)[1:-1],file = log_file)
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
 
-    value_losses = []
-    policy_losses = []
 
     for i in range(1,args.num_train_episodes+1):
         obs, pis, returns, total_reward, done_state = execute_episode(network,
@@ -176,13 +179,19 @@ def loop():
 
         batch = mem.get_minibatch()
         vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
-        value_losses.append(vl)
-        policy_losses.append(pl)
+        value_losses.append(str(vl))
+        prob_losses.append(str(pl))
 
 
-        #update most recent state
+        #update most recent model and memory
         if i % args.eval_freq== 0: 
             test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
+
+#               plt.plot(value_losses, label="value loss")
+#               plt.plot(prob_losses, label="action probability loss")
+#               plt.legend()
+#               plt.show()
+
          
             #update most recent model
             torch.save(network.state_dict(), model_save_state_path)
@@ -192,18 +201,21 @@ def loop():
             np.save(memory_file_path,mem.columns)
 
             #save numberof train episodes
-            with open(num_train_episodes_file_path, "w") as file:
+            with open(num_train_episodes_and_losses_file_path, "w") as file:
                 print(start_num_train_episodes+i,file = file)
+                print(",".join(value_losses),file = file)
+                print(",".join(prob_losses),file = file)
+
 
         #periodic save of model and memory state
         if args.save_periodic > 0 and i % args.save_periodic ==0: 
             model_periodic_save_path= save_dir+ f"{start_num_train_episodes+i}.pth"
             torch.save(network.state_dict(), periodic_save_path)
 
-            memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.txt"
-            with open(memory_periodic-save_path, "w") as file:
-                json.dump(mem.columns, file)
- 
+            memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
+
+            np.save(memory_periodic_save_path,mem.columns)
+
 
 
 
