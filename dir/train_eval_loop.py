@@ -45,6 +45,7 @@ mem_load_path = args.reload_mem if args.reload_mem !="" else memory_file_path
 #TODO make it so you can select the environment and ig figure out what other things need to change for those...
 assert args.max_step >0
 env_module.MAX_STEP = args.max_step
+env_module.STEP_PENALTY = args.step_penalty
 select_init_method(args.init_method, args.custom_init_list)
 
 n_vectors = 2

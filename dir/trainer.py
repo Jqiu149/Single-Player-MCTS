@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Trainer:
     """
@@ -23,7 +22,7 @@ class Trainer:
     def __init__(self, Policy, model_path="",  learning_rate=0.1):
 
         self.step_model = Policy()
-        self.step_model.to(device)
+        self.step_model
         if(model_path != "" and Path(model_path).is_file() ):
            self.step_model.load_state_dict(torch.load(model_path, weights_only=True)) 
            print("loaded_model")
@@ -40,8 +39,8 @@ class Trainer:
             self.step_model.train()
             
             obs = torch.from_numpy(obs)
-            search_pis = torch.from_numpy(search_pis).to(device)
-            returns = torch.from_numpy(returns).to(device)
+            search_pis = torch.from_numpy(search_pis)
+            returns = torch.from_numpy(returns)
 
             optimizer.zero_grad()
             logits, policy, value = self.step_model(obs) # the policy isn't actualyl used here... but it's just argmax of logits

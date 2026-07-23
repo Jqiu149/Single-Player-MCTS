@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from scipy.stats import loguniform
 from .static_env import StaticEnv
 
 
@@ -31,38 +32,36 @@ def polarToCartesian( angle, magnitude):
 	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
 
 
-def logUniformReal(maxint):
-	return	10** (np.log10(maxint)*np.random.rand())
-
 #for if you want to choose a basis randomly
 #will generate a pair of linearly independent 2d integer vectors 
 # we'll probably need to work on this to like check if we're hapy with the distribution this guves but... for now it will probably maybe run?
-def random_basis(m=1000,minAngleDiff=0,maxAngleDiff=2*np.pi):
-	m1 = logUniformReal(m/10) 
-	m2 = logUniformReal(m/10)
-	a1 = random.uniform(0, 2*np.pi)
-	a2 = a1+random.uniform(minAngleDiff,maxAngleDiff)
 
+#min magnitude is going to be 10 ig b/c we're doing integers and i think after rounding it gives a distribution i like more this way...
+def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi,maxAngleDiff=2*np.pi):
 
-	v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
-	v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
+    m1 = random.uniform(1,m/10)
+    m2 = random.uniform(1,m/10)
+    a1 = random.uniform(0, 2*np.pi)
+    a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
 
-	if(v1 == [0,0]):
-	  v1[0] = 1
+    v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
+    v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
 
-	counter = 0
-	while( not pairVectorsR2LinearIndep(v1, v2)):
-		m2 = logUniformReal(m/10)
-		a2 = a1+random.uniform(minAngleDiff, maxAngleDiff) 
-		if random.uniform(0,1)> 0.5 :
-			a2 += np.pi
-		v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
-		counter+=1
-		if(counter >1000):
-			raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
+    if(v1 == [0,0]):
+      v1[0] = 1
 
-	return [np.array(v1), np.array(v2)]
+    counter = 0
+    while( not pairVectorsR2LinearIndep(v1, v2)):
+        m2 = random.uniform(1,m/10)
+        a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
+        if random.uniform(0,1)> 0.5 :
+            a2 += np.pi
+        v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
+        counter+=1
+        if(counter >1000):
+            raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
 
+    return [np.array(v1), np.array(v2)]
 
 #used to set the value of basis generator
 # for method...
@@ -129,6 +128,8 @@ def LagrangeReduce(v1,v2):
 END = 0
 S = 1
 T = 2
+
+STEP_PENALTY = 1e-5
 
 	
 #states will be list of...
@@ -218,7 +219,7 @@ class Env(StaticEnv):
 		"""
 
 		magnitudes = [np.linalg.norm(v) for v in state[0:-2]]
-		return ( state[-2]/min(magnitudes))**2 -0.0001*step_idx
+		return ( state[-2]/min(magnitudes))**2 -0.000001*step_idx
 
 
 

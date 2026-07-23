@@ -4,12 +4,12 @@ parser = argparse.ArgumentParser()
 
 def get_input():
 
-#training settings
-
+#file saving  
     parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")
     parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
     parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
 
+#trainer settings
     parser.add_argument('--eval_only', action='store_true')
 
     parser.add_argument("--num_train_episodes", type=int, default=1000, help="the training code is going to repeatedly run an episode, then train the policy neural net. This is the number of times we do this")
@@ -31,7 +31,7 @@ def get_input():
 
 
 
-
+#environment related
     parser.add_argument("--init_method", type=str, default="default", 
         help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options
         """)
@@ -42,15 +42,17 @@ def get_input():
     parser.add_argument("--max_step", type=int, default=50, 
             help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
 
+    parser.add_argument("--step_penalty", type=float, default = 1e-5, help = "penality to apply to reward for each step taken")
 
-    #evaluation settings
+
+#evaluation settings
     parser.add_argument("--num_min_to_report", type=int, default=1, help="after evaluating, the number of the lowest rewards to report in an evaluation batch")
 
     parser.add_argument("--num_max_to_report", type=int, default=1, help="after evaluating, the number of the highest rewards to report in an evaluation batch")
 
 
 
-    #mcts settings
+#mcts settings
 
     parser.add_argument("--num_simulations", type=int, default=200, help="number of simulations before a step is taken in MCTS")
 
@@ -61,7 +63,7 @@ def get_input():
 
 
 
-    #probably smth about the optimizer and/or decay?
+#probably smth about the optimizer and/or decay?
 
     parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
     parser.add_argument("--num_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
