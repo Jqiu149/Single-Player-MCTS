@@ -23,8 +23,9 @@ def get_input():
 
 
     parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
-    parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
+    parser.add_argument("--lr", type=float, default=0.2, help="learning rate used to train the neural net")
 
+    parser.add_argument("--weight_decay", type=float, default=0.0001, help="weight decay used in optimizer to train the neural net")
 
     parser.add_argument("--reload_model", type=str, default="",help="path to model to be loaded. ignored if it's an empty string")
     parser.add_argument("--reload_mem", type=str, default="",help="path to memory to be loaded. ignored if it's an empty string")

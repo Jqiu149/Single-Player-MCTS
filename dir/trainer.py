@@ -19,7 +19,7 @@ class Trainer:
     #learning rate is the one used in optimzer
 
 
-    def __init__(self, Policy, model_path="",  learning_rate=0.1):
+    def __init__(self, Policy, model_path="",  lr=0.2, weight_decay=1e-4):
 
         self.step_model = Policy()
         self.step_model
@@ -29,7 +29,7 @@ class Trainer:
 
         value_criterion = nn.MSELoss()
         optimizer = torch.optim.SGD(self.step_model.parameters(),
-                                    lr=learning_rate)
+                                    lr=lr,weight_decay = weight_decay)
         # maybe we swap to adam? i think is like generically more liekly to do well ? maybe not?
         # i mean ig adamW for weight decay if want to emulate original thing more
 

@@ -61,7 +61,7 @@ mcts.TEMP_THRESHOLD=args.temp_threshold
 #policy settings
  
 encoder_nhead=2 # needs to divide vector_dim...
-trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), model_path=model_load_path )
+trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), lr=args.lr,weight_decay = args.weight_decay, model_path=model_load_path )
 
 
 
