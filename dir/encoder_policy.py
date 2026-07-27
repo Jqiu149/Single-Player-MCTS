@@ -8,6 +8,11 @@ import torch.nn.functional as F
 from positional_encodings.torch_encodings import PositionalEncoding1D, Summer
 
 
+#leaving this as a comment b/c idk what i'm supposed to be doing for now...
+#!pip install positional-encodings[pytorch]
+#https://github.com/tatp22/multidim-positional-encoding
+
+
 class Policy(nn.Module):
   def __init__(self, num_encoder_layers, vector_dim, encoder_nhead, num_actions):
     super().__init__()
