@@ -2,7 +2,6 @@ import torch
 import math
 
 from torch import nn, Tensor
-import numpy as n
 import torch.nn.functional as F
 
 from positional_encodings.torch_encodings import PositionalEncoding1D, Summer
@@ -19,7 +18,7 @@ class Policy(nn.Module):
     self.pos_enc= Summer(PositionalEncoding1D(vector_dim))
 
     encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead,batch_first=True)
-    self.encoder = transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
+    self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
 
     self.linear_p = nn.Linear(vector_dim, num_actions)
     self.linear_v = nn.Linear(vector_dim, 1)
@@ -38,11 +37,11 @@ class Policy(nn.Module):
     inp = self.encoder(inp)
 
     #compute logits and p
-    logits = self.linear_p(inp[:, -1, :])
+    logits = self.linear_p(inp[:, -2, :])
     policy = F.softmax(logits, dim=1)
 
     #compute v
-    v = self.linear_v(inp[:, -2, :]).view(-1)
+    v = self.linear_v(inp[:, -1, :]).view(-1)
 
     return logits,policy, v
 
