@@ -32,12 +32,14 @@ save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
 log_file_path = save_dir + "log_file.txt"
 eval_examples_path = save_dir + "eval_"
 memory_file_path = save_dir + "mem.npy"
-model_save_state_path = save_dir+ "checkpoint.pth"
+recent_model_save_state_path = save_dir+ "checkpoint.pth"
+best_mean_model_save_state_path = save_dir + "best_mean.pth"
+best_min_model_save_state_path = save_dir + "best_min.pth"
 
-num_train_episodes_and_losses_file_path = save_dir + "num_train_episodes_and_losses.txt"
+easy_acess_vars_file_path = save_dir + "easy_acess_vars.txt"
 
 
-model_load_path = args.reload_model if args.reload_model!="" else model_save_state_path
+model_load_path = args.reload_model if args.reload_model!="" else recent_model_save_state_path
 mem_load_path = args.reload_mem if args.reload_mem !="" else memory_file_path
 
 
@@ -90,6 +92,7 @@ except FileNotFoundError:
 
 
 # evaluate and report on current agent state
+# return best mean and min
 def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
     network.eval()
     obs_list = []
@@ -143,18 +146,23 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
             print(f"final state: {done_state_list[i]}", file=file)
 
 
+    return mean_reward, min_rewards[0]
 
 
 def loop():
     #figure out how many train_episodes we've done
     try:
-        with open(num_train_episodes_and_losses_file_path, "r") as file:
+        with open(easy_acess_vars_file_path , "r") as file:
             start_num_train_episodes = int(file.readline())
+            best_mean = float(file.readline())
+            best_min = float(file.readline())
             value_losses=file.readline().split(",")
             prob_losses=file.readline().split(",")
 
     except FileNotFoundError:
         start_num_train_episodes = 0
+        best_mean = -np.inf
+        best_min = -np.inf
         value_losses = []
         prob_losses = []
 
@@ -186,7 +194,7 @@ def loop():
 
         #update most recent model and memory
         if i % args.eval_freq== 0: 
-            test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
+            mean_rew, min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
 
 #               plt.plot(value_losses, label="value loss")
 #               plt.plot(prob_losses, label="action probability loss")
@@ -195,17 +203,30 @@ def loop():
 
          
             #update most recent model
-            torch.save(network.state_dict(), model_save_state_path)
+            torch.save(network.state_dict(), recent_model_save_state_path)
             print("model saved")
 
             #save most recent memory state
             np.save(memory_file_path,mem.columns)
 
+            #update best mean or best min network if needed
+            if mean_rew > best_mean: 
+                best_mean = mean_rew
+                torch.save(network.state_dict(), best_mean_model_save_state_path)
+
+            if min_rew > best_min:
+                best_min = min_rew
+                torch.save(network.state_dict(), best_min_model_save_state_path)
+
+
             #save numberof train episodes
-            with open(num_train_episodes_and_losses_file_path, "w") as file:
+            with open(easy_acess_vars_file_path, "w") as file:
                 print(start_num_train_episodes+i,file = file)
+                print(best_mean,file=file)
+                print(best_min,file=file)
                 print(",".join(value_losses),file = file)
                 print(",".join(prob_losses),file = file)
+
 
 
         #periodic save of model and memory state
