@@ -150,21 +150,22 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
 
 def loop():
+
     #figure out how many train_episodes we've done
     try:
         with open(easy_acess_vars_file_path , "r") as file:
             start_num_train_episodes = int(file.readline())
             best_mean = float(file.readline())
             best_min = float(file.readline())
-            value_losses=file.readline().split(",")
-            prob_losses=file.readline().split(",")
+            avg_value_losses=file.readline().split(",")
+            avg_policy_losses=file.readline().split(",")
 
     except FileNotFoundError:
         start_num_train_episodes = 0
         best_mean = -np.inf
         best_min = -np.inf
-        value_losses = []
-        prob_losses = []
+        avg_value_losses = []
+        avg_policy_losses = []
 
     
     #create folders we're going to store our files in if it doesn't exist
@@ -178,20 +179,27 @@ def loop():
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
 
-
+    #actual training now ig
     for i in range(1,args.num_train_episodes+1):
+
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  args.num_simulations,
                                                                  Env)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
+ 
+        # train network and report avg losses
+        vl_total= 0
+        pl_total =0
+        for j in range(args.num_train_step_per_episode):
+            batch = mem.get_minibatch()
+            vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
+            vl_total +=vl
+            pl_total +=pl
+        avg_value_losses.append( str(vl_total/args.num_train_step_per_episode))
+        avg_policy_losses.append( str(pl_total/args.num_train_step_per_episode))
 
 
-        batch = mem.get_minibatch()
-        vl, pl = trainer.train(batch["ob"], batch["pi"], batch["return"])
-        value_losses.append(str(vl))
-        prob_losses.append(str(pl))
-
-
+        print(i)
         #update most recent model and memory
         if i % args.eval_freq== 0: 
             mean_rew, min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
@@ -224,8 +232,8 @@ def loop():
                 print(start_num_train_episodes+i,file = file)
                 print(best_mean,file=file)
                 print(best_min,file=file)
-                print(",".join(value_losses),file = file)
-                print(",".join(prob_losses),file = file)
+                print(",".join(avg_value_losses),file = file)
+                print(",".join(avg_policy_losses),file = file)
 
 
 
