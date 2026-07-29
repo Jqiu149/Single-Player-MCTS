@@ -199,7 +199,6 @@ def loop():
         avg_policy_losses.append( str(pl_total/args.num_train_step_per_episode))
 
 
-        print(i)
         #update most recent model and memory
         if i % args.eval_freq== 0: 
             mean_rew, min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
