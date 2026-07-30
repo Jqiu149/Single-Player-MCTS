@@ -63,7 +63,7 @@ mcts.TEMP_THRESHOLD=args.temp_threshold
 #policy settings
  
 encoder_nhead=2 # needs to divide vector_dim...
-trainer=trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), lr=args.lr,weight_decay = args.weight_decay, model_path=model_load_path )
+trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), lr=args.lr,weight_decay = args.weight_decay, model_path=model_load_path )
 
 
 
@@ -73,7 +73,7 @@ network = trainer.step_model
 
 #memroy stuff
 mem = ReplayMemory(args.memory_size,
-                   { "ob": np.long,
+                   { "ob": np.int64,
                      "pi": np.float32,
                      "return": np.float32},
                    { "ob":obs_shape,
@@ -100,20 +100,21 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     reward_list = []
     done_state_list=[]
 
-    for i in range(num_iterations):
-        obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
-                                                                 args.num_simulations,
-                                                                 Env )
-        print("observation list:")
-        print(obs)
-        print(action_list)
-        print(reward)
-        print(f"final state: {done_state}")
+    with torch.no_grad:
+        for i in range(num_iterations):
+            obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
+                                                                     args.num_simulations,
+                                                                     Env )
+            print("observation list:")
+            print(obs)
+            print(action_list)
+            print(reward)
+            print(f"final state: {done_state}")
 
-        obs_list.append(obs)
-        action_list_list.append(action_list)
-        reward_list.append(reward)
-        done_state_list.append(done_state)
+            obs_list.append(obs)
+            action_list_list.append(action_list)
+            reward_list.append(reward)
+            done_state_list.append(done_state)
 
     indices_sorted_by_reward =np.argsort(reward_list)
     mean_reward= np.mean(reward_list)          
@@ -239,7 +240,7 @@ def loop():
         #periodic save of model and memory state
         if args.save_periodic > 0 and i % args.save_periodic ==0: 
             model_periodic_save_path= save_dir+ f"{start_num_train_episodes+i}.pth"
-            torch.save(network.state_dict(), periodic_save_path)
+            torch.save(network.state_dict(), model_periodic_save_path)
 
             memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
 
