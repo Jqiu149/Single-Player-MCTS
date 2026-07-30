@@ -93,6 +93,7 @@ def select_init_method(method, custom_list):
 
 basis_generator= pick_from_basis_list
 MAX_STEP = 75
+STEP_PENALTY = -0.000001
 
 
 
@@ -219,7 +220,7 @@ class Env(StaticEnv):
 		"""
 
 		magnitudes = [np.linalg.norm(v) for v in state[0:-2]]
-		return ( state[-2]/min(magnitudes))**2 -0.000001*step_idx
+		return ( state[-2]/min(magnitudes))**2 STEP_PENALTY*step_idx
 
 
 
