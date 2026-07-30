@@ -100,7 +100,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     reward_list = []
     done_state_list=[]
 
-    with torch.no_grad:
+    with torch.no_grad():
         for i in range(num_iterations):
             obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                      args.num_simulations,
