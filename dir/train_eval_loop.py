@@ -1,3 +1,8 @@
+#import sys
+#import numpy
+#numpy.set_printoptions(threshold=sys.maxsize)
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -31,7 +36,9 @@ assert args.batch_size < args.memory_size
 save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id  + '/'
 log_file_path = save_dir + "log_file.txt"
 eval_examples_path = save_dir + "eval_"
-memory_file_path = save_dir + "mem.npy"
+recent_memory_file_path = save_dir + "recent_mem.npy"
+best_mean_memory_file_path = save_dir + "best_mean_mem.npy"
+best_min_memory_file_path = save_dir + "best_min_mem.npy"
 recent_model_save_state_path = save_dir+ "checkpoint.pth"
 best_mean_model_save_state_path = save_dir + "best_mean.pth"
 best_min_model_save_state_path = save_dir + "best_min.pth"
@@ -40,7 +47,7 @@ easy_acess_vars_file_path = save_dir + "easy_acess_vars.txt"
 
 
 model_load_path = args.reload_model if args.reload_model!="" else recent_model_save_state_path
-mem_load_path = args.reload_mem if args.reload_mem !="" else memory_file_path
+mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_path
 
 
 #environment settings
@@ -228,17 +235,19 @@ def loop():
             print("model saved")
 
             #save most recent memory state
-            np.save(memory_file_path,mem.columns)
+            np.save(recent_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
 
             #update best mean or best min network if needed
             if mean_rew > best_mean: 
                 best_mean = mean_rew
                 torch.save(network.state_dict(), best_mean_model_save_state_path)
 
+                np.save(best_mean_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
             if min_rew > best_min:
                 best_min = min_rew
                 torch.save(network.state_dict(), best_min_model_save_state_path)
 
+                np.save(best_min_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
 
             #save numberof train episodes
             with open(easy_acess_vars_file_path, "w") as file:

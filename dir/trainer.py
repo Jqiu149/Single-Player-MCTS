@@ -36,6 +36,8 @@ class Trainer:
         #ig assuming that are numpy objects
         def train(obs, search_pis, returns):
 
+            #print(obs, search_pis, returns)
+
             #with torch.autograd.detect_anomaly():  
                 self.step_model.train()
                 
@@ -43,8 +45,10 @@ class Trainer:
                 search_pis = torch.from_numpy(search_pis)
                 returns = torch.from_numpy(returns)
 
+                
                 optimizer.zero_grad()
                 logits, policy, value = self.step_model(obs) # the policy isn't actualyl used here... but it's just argmax of logits
+
 
                 logsoftmax = nn.LogSoftmax(dim=1)
                 policy_loss = 5*torch.mean(torch.sum(-search_pis
@@ -53,7 +57,7 @@ class Trainer:
                                                                                 #but yeah just taking mean of policy losses
                 value_loss = value_criterion(value, returns)                    # default for this since not specified when constructed guy is also taking mean of losses
 
-                #print(value, returns)
+                #print(value,logits,  returns, search_pis)
                 #print("pol loss", policy_loss)
                 #print("val loss", value_loss)
                 loss = policy_loss + value_loss
@@ -61,6 +65,6 @@ class Trainer:
                 loss.backward()
                 optimizer.step()
 
-                return value_loss.data.cpu().numpy(), policy_loss.data.cpu().numpy()
+                return value_loss.data.numpy(), policy_loss.data.numpy()
 
         self.train = train

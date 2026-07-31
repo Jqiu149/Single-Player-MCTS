@@ -64,6 +64,9 @@ class ReplayMemory:
         num = len(list(rows.values())[0])
         assert all(len(x) == num for x in rows.values())
 
+        #probably get rid of this later but for now since i'm not clear if this is an issue...
+        assert all(np.any(np.isnan(x)) == False for x in rows.values())
+
         if self.current + num <= self.size:
             for column_name in self.columns.keys():
                 self.columns[column_name][np.arange(num)+self.current] = \
@@ -83,6 +86,7 @@ class ReplayMemory:
         self.count = max(self.count, min(self.current + num, self.size))
         self.current = (self.current + num) % self.size
 
+        
     def get_minibatch(self):
         """
         Returns a batch of experience tuples for training.
