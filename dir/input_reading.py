@@ -69,6 +69,9 @@ def get_input():
 
     parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
     parser.add_argument("--num_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
+    parser.add_argument("--num_heads", type = int, default = 8, help = "number of heads in the transformer model")
+    parser.add_argument("--emb_dim", type = int, default = 256, help = "dimension of the vectors used for the transformer attention layers")
+    parser.add_argument("--transformer_feedforward_dim", default = 2048, help = "the hidden dimension of the ffn in the transformer")
 
 
     return parser.parse_args()

@@ -61,9 +61,21 @@ mcts.TEMP_THRESHOLD=args.temp_threshold
 
 
 #policy settings
- 
-encoder_nhead=2 # needs to divide vector_dim...
-trainer=Trainer( lambda: Policy(args.num_layers, vector_dim, encoder_nhead, n_actions), lr=args.lr,weight_decay = args.weight_decay, model_path=model_load_path )
+
+assert args.emb_dim % args.num_heads ==0, "pytorch requires the number of heads divide the embedding dimension"
+
+trainer=Trainer( lambda: Policy(
+                            num_encoder_layers = args.num_layers, 
+                            input_dim=vector_dim, 
+                            emb_dim = args.emb_dim,
+                            transformer_feedforward_dim = args.transformer_feedforward_dim,
+                            encoder_nhead =args.num_heads,
+                            num_actions = n_actions
+                            ), 
+                        lr=args.lr,
+                        weight_decay = args.weight_decay, 
+                        model_path=model_load_path 
+                )
 
 
 
@@ -73,7 +85,7 @@ network = trainer.step_model
 
 #memroy stuff
 mem = ReplayMemory(args.memory_size,
-                   { "ob": np.int64,
+                   { "ob": np.float32,
                      "pi": np.float32,
                      "return": np.float32},
                    { "ob":obs_shape,
@@ -108,6 +120,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
             print("observation list:")
             print(obs)
             print(action_list)
+            print(pis)
             print(reward)
             print(f"final state: {done_state}")
 

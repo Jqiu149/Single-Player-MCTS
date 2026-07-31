@@ -12,29 +12,52 @@ from positional_encodings.torch_encodings import PositionalEncoding1D, Summer
 #https://github.com/tatp22/multidim-positional-encoding
 
 
-class Policy(nn.Module):
-  def __init__(self, num_encoder_layers, vector_dim, encoder_nhead, num_actions):
-    super().__init__()
-    self.pos_enc= Summer(PositionalEncoding1D(vector_dim))
 
-    encoder_layer =nn.TransformerEncoderLayer(d_model=vector_dim, nhead=encoder_nhead,batch_first=True)
+# okay so input dim is the dimension of the vectors being given
+# transformer_dim is the dimension we want to map that input to using a linera layer, before feeding it into the transformer and the rest of the model ig
+class Policy(nn.Module):
+  def __init__(self, num_encoder_layers, input_dim, emb_dim, transformer_feedforward_dim, encoder_nhead, num_actions):
+    super().__init__()
+
+    #using to take the input and map to larger dimension mainly. thought we might as well do a linear
+    self.input_linear= nn.Linear(input_dim,emb_dim)
+    
+    self.pos_emb= Summer(PositionalEncoding1D(emb_dim))
+
+    encoder_layer =nn.TransformerEncoderLayer(d_model=emb_dim, nhead=encoder_nhead,dim_feedforward = transformer_feedforward_dim, batch_first=True)
     self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
 
-    self.linear_p = nn.Linear(vector_dim, num_actions)
-    self.linear_v = nn.Linear(vector_dim, 1)
+    self.linear_p = nn.Linear(emb_dim, num_actions)
+    self.linear_v = nn.Linear(emb_dim, 1)
 
-    self.extra_colp =  nn.Parameter(torch.randn(vector_dim))
-    self.extra_colv =  nn.Parameter(torch.randn(vector_dim))
+    self.extra_colp =  nn.Parameter(torch.randn(emb_dim))
+    self.extra_colv =  nn.Parameter(torch.randn(emb_dim))
 
   def forward(self,x):
-    inp = torch.cat([x,
+
+    print("weights and biases?", self.input_linear.weight, self.input_linear.bias)
+    #print(x)
+
+    inp = self.input_linear(x)
+
+    #print("after input_linear", inp)
+
+    inp = torch.cat([inp,
                     self.extra_colp.unsqueeze(0).expand(x.size(0), -1, -1),
                     self.extra_colv.unsqueeze(0).expand(x.size(0), -1, -1)
                     ],
                     dim=1
                     )
-    inp = self.pos_enc(inp)
+
+    #print("after cat", inp)
+
+    inp = self.pos_emb(inp)
+
+    #print("after pos_emb", inp)
+
     inp = self.encoder(inp)
+
+    #print("after encoder", inp)
 
     #compute logits and p
     logits = self.linear_p(inp[:, -2, :])

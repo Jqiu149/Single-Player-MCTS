@@ -22,7 +22,6 @@ class Trainer:
     def __init__(self, Policy, model_path="",  lr=0.2, weight_decay=1e-4):
 
         self.step_model = Policy()
-        self.step_model
         if(model_path != "" and Path(model_path).is_file() ):
            self.step_model.load_state_dict(torch.load(model_path, weights_only=True)) 
            print("loaded_model")
