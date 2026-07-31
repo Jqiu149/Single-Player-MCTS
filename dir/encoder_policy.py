@@ -35,7 +35,7 @@ class Policy(nn.Module):
 
   def forward(self,x):
 
-    print("weights and biases?", self.input_linear.weight, self.input_linear.bias)
+    #print("weights and biases?", self.input_linear.weight, self.input_linear.bias)
     #print(x)
 
     inp = self.input_linear(x)
