@@ -35,7 +35,7 @@ def get_input():
 
 #environment related
     parser.add_argument("--init_method", type=str, default="default", 
-        help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options
+        help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options. Generally if you're using a function to generate, pass in the option, then the argument name you want followed by an equal sign and the value you want. use commas as seperators between the init method and the arguments. e.g give init_method,arg1=x,arg2=y
         """)
 
     parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes. so eg \"[ [[1,2], [3,4]], [[5,6],[7,8]] ]\" ", default = "[]")

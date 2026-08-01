@@ -2,6 +2,8 @@ import numpy as np
 import random
 from scipy.stats import loguniform
 from .static_env import StaticEnv
+from . helper import parse_init_method
+from functools import partial
 
 
 
@@ -38,6 +40,7 @@ def polarToCartesian( angle, magnitude):
 
 #min magnitude is going to be 10 ig b/c we're doing integers and i think after rounding it gives a distribution i like more this way...
 def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi):
+    print(m, minAngleDiff)
     maxAngleDiff=2*np.pi
 
     m1 = random.uniform(1,m/10)
@@ -72,11 +75,13 @@ def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi):
 def select_init_method(method, custom_list): 
 	global basis_generator
 
+	method, args = parse_init_method(method)
+
 	if method == "default":
 		basis_generator = pick_from_basis_list
 	elif method == "random_generator":
-		basis_generator = random_basis
-	elif method == "custom_list":
+		basis_generator = partial(random_basis, **args)
+	elif method== "custom_list":
 		assert np.shape(custom_list)[1:] == (2,2), f"custom_list shape is {np.shape(custom_list)}"
 		custom_list = [ [np.array(vector) for vector in vector_list ] for vector_list in custom_list]
 

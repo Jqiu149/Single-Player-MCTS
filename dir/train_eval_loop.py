@@ -195,7 +195,8 @@ def loop():
 
 
     # print the values of the arguments for this program 
-    print(json.dumps(vars(args), indent = 0)[1:-1])
+    print("-"*50 + "Start of Settings" + "-"*50)
+    print(json.dumps(vars(args), sort_keys = True, indent = 0)[1:-1])
     with open(log_file_path, "a+") as log_file:
         print(json.dumps(vars(args),sort_keys=True, indent = 0)[1:-1],file = log_file)
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
@@ -233,7 +234,7 @@ def loop():
          
             #update most recent model
             torch.save(network.state_dict(), recent_model_save_state_path)
-            print("model saved")
+            print("-"*50 + "model saved" + "-"*50)
 
             #save most recent memory state
             np.save(recent_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
