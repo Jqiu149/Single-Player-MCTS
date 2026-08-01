@@ -195,9 +195,9 @@ def loop():
 
 
     # print the values of the arguments for this program 
-    print("-"*50 + "Start of Settings" + "-"*50)
     print(json.dumps(vars(args), sort_keys = True, indent = 0)[1:-1])
     with open(log_file_path, "a+") as log_file:
+        print("-"*50 + "Start of Settings" + "-"*50)
         print(json.dumps(vars(args),sort_keys=True, indent = 0)[1:-1],file = log_file)
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
