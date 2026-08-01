@@ -37,7 +37,8 @@ def polarToCartesian( angle, magnitude):
 # we'll probably need to work on this to like check if we're hapy with the distribution this guves but... for now it will probably maybe run?
 
 #min magnitude is going to be 10 ig b/c we're doing integers and i think after rounding it gives a distribution i like more this way...
-def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi,maxAngleDiff=2*np.pi):
+def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi):
+    maxAngleDiff=2*np.pi
 
     m1 = random.uniform(1,m/10)
     m2 = random.uniform(1,m/10)

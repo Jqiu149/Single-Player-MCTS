@@ -14,18 +14,19 @@ from .replay_memory import ReplayMemory
 from . import mcts
 from .mcts import execute_episode
 from .mcts import execute_episode_eval
-
 from .encoder_policy import Policy
+from .input_reading import get_input
+
+
+args =get_input()
+
+#probably if statement, based on args thingy ... choose env ig
 from . import lattice_env as env_module
 from .lattice_env import Env, select_init_method
 
 
 
-from .input_reading import get_input
 
-
-
-args =get_input()
 
 
 #logging and saving state info paths
@@ -83,11 +84,7 @@ trainer=Trainer( lambda: Policy(
                         weight_decay = args.weight_decay, 
                         model_path=model_load_path 
                 )
-
-
-
 network = trainer.step_model
-#++++++++++++
 
 
 #memroy stuff
@@ -99,8 +96,6 @@ mem = ReplayMemory(args.memory_size,
                      "pi": [n_actions],
                      "return": []},
                    batch_size = args.batch_size)
-
-import numpy as np
 
 try:
     mem.add_all(np.load(mem_load_path,allow_pickle=True).item())
@@ -126,10 +121,11 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
                                                                      Env )
             print("observation list:")
             print(obs)
+            print("action list:")
             print(action_list)
+            print("pis:")
             print(pis)
-            print(reward)
-            print(f"final state: {done_state}")
+            print("reward:", reward)
 
             obs_list.append(obs)
             action_list_list.append(action_list)
@@ -159,15 +155,20 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
         print(file = log_file)
 
     with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
-        for i in indices_sorted_by_reward:
+        #... our naming isn't great here but idk what do so... leaving for now ig :D 
+        for index_num, i in enumerate(indices_sorted_by_reward):
+            print(index_num, file = file)
             print("observation list:", file=file)
             print(obs_list[i], file=file)
+            print("action list:", file = file)
             print(action_list_list[i], file=file)
             print(reward_list[i], file=file)
             print(f"final state: {done_state_list[i]}", file=file)
 
 
-    return mean_reward, min_rewards[0]
+    return mean_reward, np.mean(min_rewards)
+
+
 
 
 def loop():
@@ -222,7 +223,7 @@ def loop():
 
         #update most recent model and memory
         if i % args.eval_freq== 0: 
-            mean_rew, min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
+            mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
 
 #               plt.plot(value_losses, label="value loss")
 #               plt.plot(prob_losses, label="action probability loss")
@@ -243,8 +244,8 @@ def loop():
                 torch.save(network.state_dict(), best_mean_model_save_state_path)
 
                 np.save(best_mean_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
-            if min_rew > best_min:
-                best_min = min_rew
+            if mean_min_rew > best_min:
+                best_min = mean_min_rew
                 torch.save(network.state_dict(), best_min_model_save_state_path)
 
                 np.save(best_min_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})

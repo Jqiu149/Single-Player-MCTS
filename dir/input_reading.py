@@ -19,11 +19,11 @@ def get_input():
 
     parser.add_argument("--save_periodic", type=int, default=0,help="In addition to saving the most recent policy, save the policy periodically every 'save_periodic' training episodes. (0 to disable)")
 
-    parser.add_argument("--memory_size", type=int, default=200, help="number of most recent datapoints from MCTS to keep to train neural net with")
+    parser.add_argument("--memory_size", type=int, default=6000, help="number of most recent datapoints from MCTS to keep to train neural net with")
 
 
     parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
-    parser.add_argument("--num_train_step_per_episode", type = int, default = 1, help="Number of optimization steps/training batches the policy neural net takes per train_episode")
+    parser.add_argument("--num_train_step_per_episode", type = int, default = 5, help="Number of optimization steps/training batches the policy neural net takes per train_episode")
     parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
 
     parser.add_argument("--weight_decay", type=float, default=0.0001, help="weight decay used in optimizer to train the neural net")
@@ -41,7 +41,7 @@ def get_input():
     parser.add_argument('--custom_init_list', type = json.loads, help ="use with --init_method set to 2. pass in your input as a list of possible valid starting states. And the list should be surrounded with quotes. so eg \"[ [[1,2], [3,4]], [[5,6],[7,8]] ]\" ", default = "[]")
 
 
-    parser.add_argument("--max_step", type=int, default=50, 
+    parser.add_argument("--max_step", type=int, default=300, 
             help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
 
     parser.add_argument("--step_penalty", type=float, default = 1e-5, help = "penality to apply to reward for each step taken")
@@ -56,7 +56,7 @@ def get_input():
 
 #mcts settings
 
-    parser.add_argument("--num_simulations", type=int, default=200, help="number of simulations before a step is taken in MCTS")
+    parser.add_argument("--num_simulations", type=int, default=300, help="number of simulations before a step is taken in MCTS")
 
     parser.add_argument("--c_puct", type= float, default = 3)
     parser.add_argument("--temp_threshold", type= int, default = 50)
