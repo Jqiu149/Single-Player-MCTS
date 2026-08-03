@@ -179,8 +179,8 @@ def loop():
             start_num_train_episodes = int(file.readline())
             best_mean = float(file.readline())
             best_min = float(file.readline())
-            avg_value_losses=file.readline().split(",")
-            avg_policy_losses=file.readline().split(",")
+            avg_value_losses=file.readline().rstrip("\n").split(",")
+            avg_policy_losses=file.readline().rstrip("\n").split(",")
 
     except FileNotFoundError:
         start_num_train_episodes = 0
@@ -198,7 +198,7 @@ def loop():
     print(json.dumps(vars(args), sort_keys = True, indent = 0)[1:-1])
 
     with open(log_file_path, "a+") as log_file:
-        print("-"*50 + "Start of Settings" + "-"*50,log_file)
+        print("-"*50 + "Start of Settings" + "-"*50,file = log_file)
         print(json.dumps(vars(args),sort_keys=True, indent = 0)[1:-1],file = log_file)
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
@@ -238,19 +238,25 @@ def loop():
             print("-"*50 + "model saved" + "-"*50)
 
             #save most recent memory state
-            np.save(recent_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
+
+            if mem.count == mem.size:
+                mem_save_state = {col_name: np.concatenate((col_content[mem.current:], col_content[0:mem.current])) for col_name,col_content  in mem.columns.items()} 
+            else:
+                mem_save_state = {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()}
+
+            np.save(recent_memory_file_path, mem_save_state )
 
             #update best mean or best min network if needed
             if mean_rew > best_mean: 
                 best_mean = mean_rew
                 torch.save(network.state_dict(), best_mean_model_save_state_path)
 
-                np.save(best_mean_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
+                np.save(best_mean_memory_file_path, mem_save_state)
             if mean_min_rew > best_min:
                 best_min = mean_min_rew
                 torch.save(network.state_dict(), best_min_model_save_state_path)
 
-                np.save(best_min_memory_file_path, {col_name: col_content[0:mem.count] for col_name,col_content  in mem.columns.items()})
+                np.save(best_min_memory_file_path, mem_save_state)
 
             #save numberof train episodes
             with open(easy_acess_vars_file_path, "w") as file:
@@ -272,7 +278,7 @@ def loop():
             np.save(memory_periodic_save_path,mem.columns)
 
 
-
+    
 
     #what the command / settings you chose were...
     #logs of how trianing going....?
