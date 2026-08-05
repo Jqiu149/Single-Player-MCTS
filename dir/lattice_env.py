@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import copy
 from scipy.stats import loguniform
 from .static_env import StaticEnv
 from . helper import parse_init_method
@@ -95,11 +96,6 @@ def select_init_method(method, custom_list):
 		ValueError (f"method chosen isn't one of the options, given {method}")
 
 
-basis_generator= pick_from_basis_list
-MAX_STEP = 75
-STEP_PENALTY = -0.000001
-
-
 
 def LagrangeReduce(v1,v2):
 	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
@@ -130,15 +126,22 @@ def LagrangeReduce(v1,v2):
 
 
 
+basis_generator= pick_from_basis_list
+MAX_STEP = 300
+STEP_PENALTY = 1e-5
+HIST_LEN = 5
+
+
+#actions
 END = 0
 S = 1
 T = 2
 
-STEP_PENALTY = 1e-5
-
 	
 #states will be list of...
-#2 np arrays of legnth 2 (2 linearly indep vectors of dim 2)
+#2 np arrays of legnth 2: 2 linearly indep vectors of dim 2 that the player can act on to produce a new basis
+#HIST_LEN many np arrays of length 2: the past HIST_LEN many vectors that were 'removed' from the current state
+#       i.e if you apply T, it's the first vector that got added to  and if you apply S it's the second vector that we multipleid by -1
 #the magnitude of the smallest vector in the lattice determined by those vectors
 #and a boolean 'done' that the agent can set to true to finish the episode
 
@@ -156,22 +159,28 @@ class Env(StaticEnv):
 		:return: Resulting state.
 		"""
 
-		v0, v1,m,done = state 
+        v0 = state[0]
+        v1 = state[1]
+        m = state[-2]
+        done = state[-1]
 
 		if(action == END):
 			new_v0 = v0.copy()
 			new_v1 = v1.copy()
+            hist = state[2:-2]
 			done = True
 		elif(action== S):
 			new_v0 = -v1
 			new_v1 = v0.copy()
+            hist = [v1]+ state[2: -3]
 		elif(action == T):
 			new_v0 = v0+v1
 			new_v1 = v1.copy()
+            hist = [v0]+ state[2: -3]
 		else:
 			raise ValueError(f"given action, {action}, is unknown")
 
-		return [new_v0, new_v1,m, done]
+		return [new_v0, new_v1] + hist+ [m, done]
 
 # i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
 	@staticmethod
@@ -196,8 +205,8 @@ class Env(StaticEnv):
 		smallest_vector = LagrangeReduce(start_basis[0], start_basis[1])[0]
 		smallest_m = np.linalg.norm(smallest_vector)
 
-
-		return start_basis+ [smallest_m, False]
+        
+		return start_basis + [np.zeros(2)]*HIST_LEN + [smallest_m, False]
 
 	@staticmethod
 	def get_obs_for_states(states):
@@ -223,7 +232,7 @@ class Env(StaticEnv):
 		:return: Return the agent has achieved so far.
 		"""
 
-		magnitudes = [np.linalg.norm(v) for v in state[0:-2]]
+		magnitudes = [np.linalg.norm(v) for v in state[0:-2-HIST_LEN]]
 		return ( state[-2]/min(magnitudes))**2 -STEP_PENALTY*step_idx
 
 
