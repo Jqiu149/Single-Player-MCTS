@@ -27,11 +27,14 @@ class Policy(nn.Module):
     encoder_layer =nn.TransformerEncoderLayer(d_model=emb_dim, nhead=encoder_nhead,dim_feedforward = transformer_feedforward_dim, batch_first=True)
     self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers, enable_nested_tensor=False)
 
+    #extra columns we pass together with input into transformer
+    self.extra_colp =  nn.Parameter(torch.randn(emb_dim))
+    self.extra_colv =  nn.Parameter(torch.randn(emb_dim))
+
+    #layers to get final output in desired shape
     self.linear_p = nn.Linear(emb_dim, num_actions)
     self.linear_v = nn.Linear(emb_dim, 1)
 
-    self.extra_colp =  nn.Parameter(torch.randn(emb_dim))
-    self.extra_colv =  nn.Parameter(torch.randn(emb_dim))
 
   def forward(self,x):
 

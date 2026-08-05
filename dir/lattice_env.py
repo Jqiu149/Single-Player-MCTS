@@ -232,7 +232,7 @@ class Env(StaticEnv):
 		:return: Return the agent has achieved so far.
 		"""
 
-		magnitudes = [np.linalg.norm(v) for v in state[0:-2-HIST_LEN]]
+		magnitudes = [np.linalg.norm(v) for v in state[0:2]]
 		return ( state[-2]/min(magnitudes))**2 -STEP_PENALTY*step_idx
 
 

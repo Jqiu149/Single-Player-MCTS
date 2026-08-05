@@ -46,6 +46,7 @@ def get_input():
 
     parser.add_argument("--step_penalty", type=float, default = 1e-5, help = "penality to apply to reward for each step taken")
 
+    parser.add_argument("--hist_len", type=int, default=5, help = "how many vectors to keep in history")
 
 #evaluation settings
     parser.add_argument("--num_min_to_report", type=int, default=1, help="after evaluating, the number of the lowest rewards to report in an evaluation batch")

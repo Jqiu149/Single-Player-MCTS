@@ -56,12 +56,13 @@ mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_
 assert args.max_step >0
 env_module.MAX_STEP = args.max_step
 env_module.STEP_PENALTY = args.step_penalty
+env_module.HIST_LEN = args.hist_len
 select_init_method(args.init_method, args.custom_init_list)
 
 n_vectors = 2
 vector_dim = 2
 n_actions=3
-obs_shape = [n_vectors, vector_dim]
+obs_shape = [n_vectors+args.hist_len, vector_dim]
 
 #mcts settings
 mcts.C_PUCT = args.c_puct
