@@ -41,30 +41,30 @@ def polarToCartesian( angle, magnitude):
 
 #min magnitude is going to be 10 ig b/c we're doing integers and i think after rounding it gives a distribution i like more this way...
 def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi, maxAngleDiff=2*np.pi):
-    
-    m1 = random.uniform(1,m/10)
-    m2 = random.uniform(1,m/10)
-    a1 = random.uniform(0, 2*np.pi)
-    a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
+	
+	m1 = random.uniform(1,m/10)
+	m2 = random.uniform(1,m/10)
+	a1 = random.uniform(0, 2*np.pi)
+	a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
 
-    v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
-    v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
+	v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
+	v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
 
-    if(v1 == [0,0]):
-      v1[0] = 1
+	if(v1 == [0,0]):
+	  v1[0] = 1
 
-    counter = 0
-    while( not pairVectorsR2LinearIndep(v1, v2)):
-        m2 = random.uniform(1,m/10)
-        a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
-        if random.uniform(0,1)> 0.5 :
-            a2 += np.pi
-        v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
-        counter+=1
-        if(counter >1000):
-            raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
+	counter = 0
+	while( not pairVectorsR2LinearIndep(v1, v2)):
+		m2 = random.uniform(1,m/10)
+		a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
+		if random.uniform(0,1)> 0.5 :
+			a2 += np.pi
+		v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
+		counter+=1
+		if(counter >1000):
+			raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
 
-    return [np.array(v1), np.array(v2)]
+	return [np.array(v1), np.array(v2)]
 
 #used to set the value of basis generator
 # for method...
@@ -141,7 +141,7 @@ T = 2
 #states will be list of...
 #2 np arrays of legnth 2: 2 linearly indep vectors of dim 2 that the player can act on to produce a new basis
 #HIST_LEN many np arrays of length 2: the past HIST_LEN many vectors that were 'removed' from the current state
-#       i.e if you apply T, it's the first vector that got added to  and if you apply S it's the second vector that we multipleid by -1
+#		i.e if you apply T, it's the first vector that got added to  and if you apply S it's the second vector that we multipleid by -1
 #the magnitude of the smallest vector in the lattice determined by those vectors
 #and a boolean 'done' that the agent can set to true to finish the episode
 
@@ -159,24 +159,24 @@ class Env(StaticEnv):
 		:return: Resulting state.
 		"""
 
-        v0 = state[0]
-        v1 = state[1]
-        m = state[-2]
-        done = state[-1]
+		v0 = state[0]
+		v1 = state[1]
+		m = state[-2]
+		done = state[-1]
 
 		if(action == END):
 			new_v0 = v0.copy()
 			new_v1 = v1.copy()
-            hist = state[2:-2]
+			hist = state[2:-2]
 			done = True
 		elif(action== S):
 			new_v0 = -v1
 			new_v1 = v0.copy()
-            hist = [v1]+ state[2: -3]
+			hist = [v1]+ state[2: -3]
 		elif(action == T):
 			new_v0 = v0+v1
 			new_v1 = v1.copy()
-            hist = [v0]+ state[2: -3]
+			hist = [v0]+ state[2: -3]
 		else:
 			raise ValueError(f"given action, {action}, is unknown")
 
@@ -205,7 +205,7 @@ class Env(StaticEnv):
 		smallest_vector = LagrangeReduce(start_basis[0], start_basis[1])[0]
 		smallest_m = np.linalg.norm(smallest_vector)
 
-        
+		
 		return start_basis + [np.zeros(2)]*HIST_LEN + [smallest_m, False]
 
 	@staticmethod
