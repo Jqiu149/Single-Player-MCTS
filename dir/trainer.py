@@ -62,6 +62,8 @@ class Trainer:
                 #print("val loss", value_loss)
                 loss = policy_loss + value_loss
 
+                #torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), 1)
+
                 loss.backward()
                 optimizer.step()
 

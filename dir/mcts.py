@@ -434,7 +434,7 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
         while mcts.root.N < current_simulations + num_simulations:
             mcts.tree_search()
 
-        # mcts.root.print_tree()
+        #mcts.root.print_tree()
         # print("_"*100)
 
         action = mcts.pick_action()
@@ -452,6 +452,8 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
 
     obs = np.concatenate(mcts.obs)
 
+    #print(mcts.searches_pi)
+    #print(len(mcts.searches_pi))
     return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state)
 
 
@@ -483,6 +485,7 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
     first_node = mcts.root.select_leaf()   # like does the run down till find a leaf thing, which in this case is jsut the first node we have in the tree?
     probs, vals = agent_netw.step(
         TreeEnv.get_obs_for_states([first_node.state]))
+    #print(probs,vals)
     first_node.incorporate_estimates(probs[0], vals[0], first_node) # call after find a leaf, basically put in the probabilities of the new guys you add and their values? and then propogates things upwards?
 
     action_list = []
@@ -517,7 +520,6 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
 
     TEMP_THRESHOLD = original_TEMP_THRESHOLD 
-
 
     return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state, action_list)
 

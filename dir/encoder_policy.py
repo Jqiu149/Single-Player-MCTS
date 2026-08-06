@@ -20,7 +20,7 @@ class Policy(nn.Module):
     super().__init__()
 
     #using to take the input and map to larger dimension mainly. thought we might as well do a linear
-    self.input_linear= nn.Linear(input_dim,emb_dim)
+    self.input_linear= nn.Linear(input_dim,emb_dim, bias=False)
     
     self.pos_emb= Summer(PositionalEncoding1D(emb_dim))
 

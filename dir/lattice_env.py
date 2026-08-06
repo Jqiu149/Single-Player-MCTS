@@ -172,11 +172,11 @@ class Env(StaticEnv):
 		elif(action== S):
 			new_v0 = -v1
 			new_v1 = v0.copy()
-			hist = [v1]+ state[2: -3]
+			hist = [v1]+ state[2: -3] if HIST_LEN>0 else []
 		elif(action == T):
 			new_v0 = v0+v1
 			new_v1 = v1.copy()
-			hist = [v0]+ state[2: -3]
+			hist = [v0]+ state[2: -3] if HIST_LEN>0 else []
 		else:
 			raise ValueError(f"given action, {action}, is unknown")
 
