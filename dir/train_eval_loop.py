@@ -109,7 +109,7 @@ except FileNotFoundError:
 # evaluate and report on current agent state
 # return best mean and min
 def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
-    assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
+    assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
 
     network.eval()
     obs_list = []
