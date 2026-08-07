@@ -43,9 +43,10 @@ class Policy(nn.Module):
 
 
 
-    #magnitudes = torch.linalg.vector_norm(x,dim = -1)
-    #max_magnitudes = magnitudes.max(dim=-1).values
-    #inp = x/ max_magnitudes.reshape(x.size(0),1,1)
+    magnitudes = torch.linalg.vector_norm(x,dim = -1)
+    magnitudes[magnitudes ==0] = torch.inf
+    min_magnitudes = magnitudes.min(dim=-1).values
+    x= x/ min_magnitudes.reshape(x.size(0),1,1)
 
 
     inp = self.input_linear(x)
@@ -60,7 +61,7 @@ class Policy(nn.Module):
                     dim=1
                     )
 
-    #mask = (inp==0).all(axis=-1)
+    mask = (inp==0).all(axis=-1)
 
     #print("after cat", inp)
 
@@ -68,8 +69,7 @@ class Policy(nn.Module):
 
     #print("after pos_emb", inp)
     
-    #src_key_padding_mask=mask
-    inp = self.encoder(inp)
+    inp = self.encoder(inp, src_key_padding_mask=mask)
 
     #print("after encoder", inp)
 
