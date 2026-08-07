@@ -41,10 +41,18 @@ class Policy(nn.Module):
     #print("weights and biases?", self.input_linear.weight, self.input_linear.bias)
     #print(x)
 
+
+
+    #magnitudes = torch.linalg.vector_norm(x,dim = -1)
+    #max_magnitudes = magnitudes.max(dim=-1).values
+    #inp = x/ max_magnitudes.reshape(x.size(0),1,1)
+
+
     inp = self.input_linear(x)
 
     #print("after input_linear", inp)
 
+     
     inp = torch.cat([inp,
                     self.extra_colp.unsqueeze(0).expand(x.size(0), -1, -1),
                     self.extra_colv.unsqueeze(0).expand(x.size(0), -1, -1)
@@ -52,12 +60,15 @@ class Policy(nn.Module):
                     dim=1
                     )
 
+    #mask = (inp==0).all(axis=-1)
+
     #print("after cat", inp)
 
     inp = self.pos_emb(inp)
 
     #print("after pos_emb", inp)
-
+    
+    #src_key_padding_mask=mask
     inp = self.encoder(inp)
 
     #print("after encoder", inp)
