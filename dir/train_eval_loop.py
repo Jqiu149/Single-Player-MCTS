@@ -20,11 +20,25 @@ from .input_reading import get_input
 
 args =get_input()
 
-#probably if statement, based on args thingy ... choose env ig
-from . import lattice_env as env_module
-from .lattice_env import Env, select_init_method
+
+if args.env == "env1":
+    print("using env1")
+    from .envs.latticeEnv2D import lattice_env as env_module
+
+    vector_dim = 2
+    n_actions=3
+    obs_shape = [2+args.hist_len, vector_dim]
 
 
+elif args.env == "env2":
+    print("using env2")
+    from .envs.latticeEnv2D import env2 as env_module
+
+    vector_dim = 2
+    n_actions=5
+    obs_shape = [3+args.hist_len, vector_dim]
+else:
+    Exception("Environment not known")
 
 
 
@@ -57,12 +71,7 @@ assert args.max_step >0
 env_module.MAX_STEP = args.max_step
 env_module.STEP_PENALTY = args.step_penalty
 env_module.HIST_LEN = args.hist_len
-select_init_method(args.init_method, args.custom_init_list)
-
-n_vectors = 2
-vector_dim = 2
-n_actions=3
-obs_shape = [n_vectors+args.hist_len, vector_dim]
+env_module.select_init_method(args.init_method, args.custom_init_list)
 
 #mcts settings
 mcts.C_PUCT = args.c_puct
@@ -117,12 +126,12 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     reward_list = []
     done_state_list=[]
 
-    print("-"*50 + current_train_episode + "-"*50)
+    print("-"*50 +str(current_train_episode)+ "-"*50)
     with torch.no_grad():
         for i in range(num_iterations):
             obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                      args.num_simulations,
-                                                                     Env )
+                                                                    env_module.Env )
             print("observation list:")
             print(obs)
             print("action list:")
@@ -212,7 +221,7 @@ def loop():
 
         obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                  args.num_simulations,
-                                                                 Env)
+                                                                 env_module.Env)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
  
         # train network and report avg losses

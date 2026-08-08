@@ -4,6 +4,7 @@ parser = argparse.ArgumentParser()
 
 def get_input():
 
+
 #file saving  
     parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")
     parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
@@ -34,6 +35,8 @@ def get_input():
 
 
 #environment related
+    parser.add_argument("--env", type = str, default = "env1")
+
     parser.add_argument("--init_method", type=str, default="default", 
         help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options. Generally if you're using a function to generate, pass in the option, then the argument name you want followed by an equal sign and the value you want. use commas as seperators between the init method and the arguments. e.g give init_method,arg1=x,arg2=y
         """)

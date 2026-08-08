@@ -1,0 +1,93 @@
+import numpy as np
+import random
+from functools import partial
+from scipy.stats import loguniform
+
+
+
+
+#for if we have a specific list we want to take from
+#set this to the list you want to be taking from, the value set below is more of an example / default ig
+#should be a list of lists of 2 of np arrays of 2 integers
+basis_list = [
+		[np.array([1,2]), np.array([0,2])],
+		[np.array([1,2]), np.array([3,4])],
+		[np.array([100, 70]), np.array([50,50])],
+		[np.array([349,-300]), np.array([49,-50])]
+		]
+
+def pick_from_basis_list():
+	return random.choice(basis_list)
+
+
+def pairVectorsR2LinearIndep(v1,v2):
+		return	v1[0]*v2[1] != v2[0]*v1[1]
+
+def polarToCartesian( angle, magnitude): 
+	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
+
+
+#for if you want to choose a basis randomly
+#will generate a pair of linearly independent 2d integer vectors 
+# we'll probably need to work on this to like check if we're hapy with the distribution this guves but... for now it will probably maybe run?
+
+#min magnitude is going to be 10 ig b/c we're doing integers and i think after rounding it gives a distribution i like more this way...
+def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi, maxAngleDiff=2*np.pi):
+	
+	m1 = random.uniform(1,m/10)
+	m2 = random.uniform(1,m/10)
+	a1 = random.uniform(0, 2*np.pi)
+	a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
+
+	v1 = [int(10*x) for x in polarToCartesian(a1, m1)]
+	v2 = [int(10*x) for x in polarToCartesian(a2, m2)]
+
+	if(v1 == [0,0]):
+	  v1[0] = 1
+
+	counter = 0
+	while( not pairVectorsR2LinearIndep(v1, v2)):
+		m2 = random.uniform(1,m/10)
+		a2 = a1+loguniform.rvs(minAngleDiff,maxAngleDiff)
+		if random.uniform(0,1)> 0.5 :
+			a2 += np.pi
+		v2 = [int(x*10) for x in polarToCartesian(a2, m2)]
+		counter+=1
+		if(counter >1000):
+			raise Exception(f"okay we generated more than 1000 lineraly dependent vectors in a row, something is probably wrong")
+
+	return [np.array(v1), np.array(v2)]
+
+#used to set the value of basis generator
+# for method...
+# give "default_list" to be using the existing basis_list defined above
+# "random_generator" to use the random_basis function
+# "custom_list" to use the list 
+
+def LagrangeReduce(v1,v2):
+	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+	assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
+	assert pairVectorsR2LinearIndep(v1,v2)
+
+	norm1Squared = np.dot(v1,v1) 
+	norm2Squared = np.dot(v2,v2) 
+
+	done = False
+	stepCount = 0
+	while(not done):
+		stepCount+=1
+
+		if(norm1Squared> norm2Squared):
+			v1,v2 = v2,v1
+			norm1Squared,norm2Squared = norm2Squared,norm1Squared
+
+		u = round( (np.dot(v1,v2))/ norm1Squared)
+		v2 = v2-u*v1
+		norm2Squared= np.dot(v2,v2) 
+
+		if(norm1Squared<= norm2Squared):
+			done = True
+
+	return [v1, v2]
+
+

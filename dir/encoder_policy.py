@@ -61,15 +61,16 @@ class Policy(nn.Module):
                     dim=1
                     )
 
-    mask = (inp==0).all(axis=-1)
+    #mask = (inp==0).all(axis=-1)
 
     #print("after cat", inp)
 
     inp = self.pos_emb(inp)
 
     #print("after pos_emb", inp)
-    
-    inp = self.encoder(inp, src_key_padding_mask=mask)
+   
+    #, src_key_padding_mask=mask
+    inp = self.encoder(inp)
 
     #print("after encoder", inp)
 
