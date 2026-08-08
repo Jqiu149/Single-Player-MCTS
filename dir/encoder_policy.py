@@ -43,10 +43,10 @@ class Policy(nn.Module):
 
 
 
-    magnitudes = torch.linalg.vector_norm(x,dim = -1)
-    magnitudes[magnitudes ==0] = torch.inf
-    min_magnitudes = magnitudes.min(dim=-1).values
-    x= x/ min_magnitudes.reshape(x.size(0),1,1)
+    #magnitudes = torch.linalg.vector_norm(x,dim = -1)
+    #magnitudes[magnitudes ==0] = torch.inf
+    #min_magnitudes = magnitudes.min(dim=-1).values
+    #x= x/ min_magnitudes.reshape(x.size(0),1,1)
 
 
     inp = self.input_linear(x)
