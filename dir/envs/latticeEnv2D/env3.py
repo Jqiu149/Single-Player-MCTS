@@ -78,6 +78,8 @@ class Env(StaticEnv):
 		done = state[-1]
 
 		if(action == END):
+			new_v0 = v0
+			new_v1 = v1
 			hist = state[2:-2]
 			done = True
 		elif(action== ADD_V0):
@@ -150,7 +152,7 @@ class Env(StaticEnv):
 		:return: Return the agent has achieved so far.
 		"""
 
-		min_magnitude= min([np.linalg.norm(v) for v in state[0:2]])
+		current_magnitude= min([np.linalg.norm(v) for v in state[0:2]])
 
 		score = ( state[-2]/current_magnitude)**2 - step_idx*STEP_PENALTY
 
