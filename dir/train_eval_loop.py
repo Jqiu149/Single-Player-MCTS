@@ -37,6 +37,13 @@ elif args.env == "env2":
     vector_dim = 2
     n_actions=5
     obs_shape = [3+args.hist_len, vector_dim]
+elif args.env == "env3":
+    print("using env3")
+    from .envs.latticeEnv2D import env3 as env_module
+
+    vector_dim = 2
+    n_actions=5
+    obs_shape = [2+args.hist_len, vector_dim]
 else:
     Exception("Environment not known")
 

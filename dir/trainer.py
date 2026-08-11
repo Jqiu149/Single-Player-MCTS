@@ -65,8 +65,8 @@ class Trainer:
 
                 loss.backward()
 
-                #grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), torch.inf)
-                #print(f"grad_norm: {grad_norm}")
+                grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), torch.inf)
+                print(f"grad_norm: {grad_norm}")
                 optimizer.step()
 
                 return value_loss.data.numpy(), policy_loss.data.numpy()
