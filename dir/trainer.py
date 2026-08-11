@@ -29,8 +29,6 @@ class Trainer:
         value_criterion = nn.MSELoss()
         optimizer = torch.optim.SGD(self.step_model.parameters(),
                                     lr=lr,weight_decay = weight_decay)
-        # maybe we swap to adam? i think is like generically more liekly to do well ? maybe not?
-        # i mean ig adamW for weight decay if want to emulate original thing more
 
         #observations/state, search_pis, returns are ig the probabilities and values fromMCTS that are being used as targets in trainign
         #ig assuming that are numpy objects
@@ -65,8 +63,8 @@ class Trainer:
 
                 loss.backward()
 
-                grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), torch.inf)
-                print(f"grad_norm: {grad_norm}")
+                #grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), torch.inf)
+                #print(f"grad_norm: {grad_norm}")
                 optimizer.step()
 
                 return value_loss.data.numpy(), policy_loss.data.numpy()

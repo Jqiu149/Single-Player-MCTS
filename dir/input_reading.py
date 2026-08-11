@@ -10,6 +10,7 @@ def get_input():
     parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
     parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
 
+
 #trainer settings
     parser.add_argument('--eval_only', action='store_true')
 
@@ -20,7 +21,7 @@ def get_input():
 
     parser.add_argument("--save_periodic", type=int, default=0,help="In addition to saving the most recent policy, save the policy periodically every 'save_periodic' training episodes. (0 to disable)")
 
-    parser.add_argument("--memory_size", type=int, default=6000, help="number of most recent datapoints from MCTS to keep to train neural net with")
+    parser.add_argument("--memory_size", type=int, default=3000, help="number of most recent datapoints from MCTS to keep to train neural net with")
 
 
     parser.add_argument("--batch_size", type=int, default=32, help="Number of datapoints per batch in training the neural net")
@@ -45,11 +46,11 @@ def get_input():
 
 
     parser.add_argument("--max_step", type=int, default=300, 
-            help="the max step number the agent can take before we end the episode. honestly i don't know if steps start from 0 or 1 right now...")
+            help="the max step number the agent can take before we end the episode.")
 
     parser.add_argument("--step_penalty", type=float, default = 1e-5, help = "penality to apply to reward for each step taken")
 
-    parser.add_argument("--hist_len", type=int, default=5, help = "how many vectors to keep in history")
+    parser.add_argument("--hist_len", type=int, default=0, help = "how many vectors to keep in history")
 
 #evaluation settings
     parser.add_argument("--num_min_to_report", type=int, default=1, help="after evaluating, the number of the lowest rewards to report in an evaluation batch")
@@ -71,7 +72,6 @@ def get_input():
 
 #probably smth about the optimizer and/or decay?
 
-    parser.add_argument("--architecture", type=str, default="encoder", help="architecture of the eural net used for the policy and value estimates")
     parser.add_argument("--num_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
     parser.add_argument("--num_heads", type = int, default = 8, help = "number of heads in the transformer model")
     parser.add_argument("--emb_dim", type = int, default = 256, help = "dimension of the vectors used for the transformer attention layers")

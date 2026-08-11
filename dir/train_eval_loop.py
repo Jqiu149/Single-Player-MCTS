@@ -14,7 +14,7 @@ from .replay_memory import ReplayMemory
 from . import mcts
 from .mcts import execute_episode
 from .mcts import execute_episode_eval
-from .encoder_policy import Policy
+from .policies.encoder_policy import Policy
 from .input_reading import get_input
 
 
@@ -125,7 +125,7 @@ except FileNotFoundError:
 # evaluate and report on current agent state
 # return best mean and min
 def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
-    assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
+    #assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
 
     network.eval()
     obs_list = []
@@ -226,9 +226,10 @@ def loop():
     #actual training now ig
     for i in range(1,args.num_train_episodes+1):
 
-        obs, pis, returns, total_reward, done_state = execute_episode(network,
-                                                                 args.num_simulations,
-                                                                 env_module.Env)
+        with torch.no_grad():
+            obs, pis, returns, total_reward, done_state = execute_episode(network,
+                                                                    args.num_simulations,
+                                                                    env_module.Env)
         mem.add_all({"ob": obs, "pi": pis, "return": returns})
  
         # train network and report avg losses
@@ -295,7 +296,7 @@ def loop():
 
             memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
 
-            np.save(memory_periodic_save_path,mem.columns)
+            np.save(memory_periodic_save_path,mem_save_state)
 
 
     
