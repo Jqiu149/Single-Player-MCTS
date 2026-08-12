@@ -1,5 +1,6 @@
 import argparse
 import json
+import torch
 parser = argparse.ArgumentParser()
 
 def get_input():
@@ -29,6 +30,7 @@ def get_input():
     parser.add_argument("--lr", type=float, default=0.0001, help="learning rate used to train the neural net")
     parser.add_argument("--weight_decay", type=float, default=0.0001, help="weight decay used in optimizer to train the neural net")
     parser.add_argument("--momentum", type=float, default=0, help="momentum used in optimizer to train the neural net")
+    parser.add_argument("--max_grad_norm", type=float, default=torch.inf, help="value used for gradient_clipping")
 
     parser.add_argument("--reload_model", type=str, default="",help="path to model to be loaded. ignored if it's an empty string")
     parser.add_argument("--reload_mem", type=str, default="",help="path to memory to be loaded. ignored if it's an empty string")
@@ -72,6 +74,7 @@ def get_input():
 
 #probably smth about the optimizer and/or decay?
 
+    parser.add_argument("--policy", type = str, default = "policy1", help = "specific policy being used")
     parser.add_argument("--num_layers", type=int, default=6, help="number of layers used in neural net used for policy and value estimates")
     parser.add_argument("--num_heads", type = int, default = 8, help = "number of heads in the transformer model")
     parser.add_argument("--emb_dim", type = int, default = 256, help = "dimension of the vectors used for the transformer attention layers")

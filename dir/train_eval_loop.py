@@ -14,7 +14,6 @@ from .replay_memory import ReplayMemory
 from . import mcts
 from .mcts import execute_episode
 from .mcts import execute_episode_eval
-from .policies.encoder_policy import Policy
 from .input_reading import get_input
 
 
@@ -46,10 +45,17 @@ elif args.env == "env3":
     n_actions=5
     obs_shape = [2+args.hist_len, vector_dim]
 else:
-    Exception("Environment not known")
+    ValueError("Environment not known")
 
 
-
+if args.policy == "policy1":
+    from .policies.encoder_policy import Policy
+    print("using policy1")
+elif args.policy == "policy2":
+    from .policies.policy2 import Policy
+    print("using policy2")
+else:
+    ValueError("No such policy")
 
 #logging and saving state info paths
 assert args.dump_path != "" and args.exp_name != "" and args.exp_id !="", "one of dump_path, exp_name, exp_id wasn't specified"
@@ -101,6 +107,7 @@ trainer=Trainer( lambda: Policy(
                         lr=args.lr,
                         weight_decay = args.weight_decay, 
                         momentum = args.momentum,
+                        max_grad_norm = args.max_grad_norm,
                         model_path=model_load_path 
                 )
 network = trainer.step_model

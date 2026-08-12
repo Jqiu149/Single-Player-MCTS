@@ -19,9 +19,10 @@ class Trainer:
     #learning rate is the one used in optimzer
 
 
-    def __init__(self, Policy, model_path="",  lr=0.002, weight_decay=1e-4, momentum = 0):
+    def __init__(self, Policy, model_path="",  lr=0.002, weight_decay=1e-4, momentum = 0, max_grad_norm= torch.inf):
 
         self.step_model = Policy()
+        self.max_grad_norm = max_grad_norm
         if(model_path != "" and Path(model_path).is_file() ):
            self.step_model.load_state_dict(torch.load(model_path, weights_only=True)) 
            print("loaded_model")
@@ -66,7 +67,7 @@ class Trainer:
 
                 loss.backward()
 
-                #grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), torch.inf)
+                grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), self.max_grad_norm)
                 #print(f"grad_norm: {grad_norm}")
                 optimizer.step()
 
