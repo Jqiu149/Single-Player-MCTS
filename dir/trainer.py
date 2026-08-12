@@ -19,7 +19,7 @@ class Trainer:
     #learning rate is the one used in optimzer
 
 
-    def __init__(self, Policy, model_path="",  lr=0.2, weight_decay=1e-4):
+    def __init__(self, Policy, model_path="",  lr=0.002, weight_decay=1e-4, momentum = 0):
 
         self.step_model = Policy()
         if(model_path != "" and Path(model_path).is_file() ):
@@ -28,7 +28,10 @@ class Trainer:
 
         value_criterion = nn.MSELoss()
         optimizer = torch.optim.SGD(self.step_model.parameters(),
-                                    lr=lr,weight_decay = weight_decay)
+                                    lr=lr,
+                                    weight_decay = weight_decay,
+                                    momentum = momentum
+                                    )
 
         #observations/state, search_pis, returns are ig the probabilities and values fromMCTS that are being used as targets in trainign
         #ig assuming that are numpy objects

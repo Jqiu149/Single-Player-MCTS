@@ -37,6 +37,7 @@ elif args.env == "env2":
     vector_dim = 2
     n_actions=5
     obs_shape = [3+args.hist_len, vector_dim]
+
 elif args.env == "env3":
     print("using env3")
     from .envs.latticeEnv2D import env3 as env_module
@@ -99,6 +100,7 @@ trainer=Trainer( lambda: Policy(
                             ), 
                         lr=args.lr,
                         weight_decay = args.weight_decay, 
+                        momentum = args.momentum,
                         model_path=model_load_path 
                 )
 network = trainer.step_model
