@@ -9,6 +9,7 @@ import torch
 import pathlib
 import json
 from importlib import import_module
+import time 
 
 from .trainer import Trainer 
 from .replay_memory import ReplayMemory
@@ -200,7 +201,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
         print(file = log_file)
 
  
-    return mean_reward, np.mean(min_rewards)
+    return statistics["avg_reward"], np.mean(statistics["min_rewards"])
 
 
 def loop():
@@ -235,8 +236,13 @@ def loop():
         print( "-"*50 + "Start of Logs" + "-"*50, file = log_file)
     
 
+    
     #actual training now ig
+
+    #start = time.time()
     for i in range(1,args.num_train_episodes+1):
+
+
 
         with torch.no_grad():
             obs, pis, returns, total_reward, done_state = execute_episode(network,
@@ -255,12 +261,19 @@ def loop():
         avg_value_losses.append( str(vl_total/args.num_train_step_per_episode))
         avg_policy_losses.append( str(pl_total/args.num_train_step_per_episode))
 
-
-        #update most recent model and memory
+   
+        #evaluate agent, then update most recent model and memory
         if i % args.eval_freq== 0: 
+#            with open(log_file_path, "a") as file:
+#                print(f"training took {(time.time()-start)/60} minutes",file = file)
+#            start = time.time()
+
             mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
 
-         
+#            with open(log_file_path, "a") as file:
+#                print(f"test_agent took{(time.time()-start)/60} minutes",file = file)
+
+  
             #update most recent model
             torch.save(network.state_dict(), recent_model_save_state_path)
             print("-"*50 + "model saved" + "-"*50)
@@ -294,8 +307,6 @@ def loop():
                 print(",".join(avg_value_losses),file = file)
                 print(",".join(avg_policy_losses),file = file)
 
-
-
         #periodic save of model and memory state
         if args.save_periodic > 0 and i % args.save_periodic ==0: 
             model_periodic_save_path= save_dir+ f"{start_num_train_episodes+i}.pth"
@@ -304,12 +315,8 @@ def loop():
             memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
 
             np.save(memory_periodic_save_path,mem_save_state)
+            
 
+        #start = time.time()
 
     
-
-    #what the command / settings you chose were...
-    #logs of how trianing going....?
-    #   ig return average + maybe other statistics related to it?
-    #    
-    # hoenstly maybe the memory guy actually... 

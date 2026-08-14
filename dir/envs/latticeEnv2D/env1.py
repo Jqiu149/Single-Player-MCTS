@@ -144,10 +144,10 @@ class Env(StaticEnv):
 		"""
 
 		min_magnitude= min([np.linalg.norm(v) for v in state[0:2]])
-		score = ( state[-2]/min_magnitude)**2 - step_idx*STEP_PENALTY
+	#	score = ( state[-2]/min_magnitude)**2 - step_idx*STEP_PENALTY
 
 
-		#score = ( state[-2]/min_magnitude)**2 * (1- step_idx*STEP_PENALTY)
+		score = ( state[-2]/min_magnitude)**2 * (1- step_idx*STEP_PENALTY)
 
 		return	score
 

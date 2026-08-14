@@ -13,12 +13,12 @@ def get_input():
 
 
 #trainer settings
-    parser.add_argument('--eval_only', action='store_true')
+    parser.add_argument('--eval_only', action='store_true', help = "pretty sure we haven't implemented this yet sorry...")
 
     parser.add_argument("--num_train_episodes", type=int, default=1000, help="the training code is going to repeatedly run an episode, then train the policy neural net. This is the number of times we do this")
 
     parser.add_argument("--eval_freq", type=int, default=50, help="how often should we evaluate the model")
-    parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many train epsidoes to run before evaluating the model")
+    parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many 'games' do we play in the evaluation step")
 
     parser.add_argument("--save_periodic", type=int, default=0,help="In addition to saving the most recent policy, save the policy periodically every 'save_periodic' training episodes. (0 to disable)")
 
