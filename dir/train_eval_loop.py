@@ -192,6 +192,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
      
     with open(log_file_path, "a") as log_file:
+        print("train_episode:", current_train_episode,file= log_file)
         for stat,value in statistics.items():
             print(f"{stat}:{value}", file = log_file) 
         
@@ -239,7 +240,6 @@ def loop():
     
     #actual training now ig
 
-    #start = time.time()
     for i in range(1,args.num_train_episodes+1):
 
 
@@ -264,15 +264,8 @@ def loop():
    
         #evaluate agent, then update most recent model and memory
         if i % args.eval_freq== 0: 
-#            with open(log_file_path, "a") as file:
-#                print(f"training took {(time.time()-start)/60} minutes",file = file)
-#            start = time.time()
 
             mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
-
-#            with open(log_file_path, "a") as file:
-#                print(f"test_agent took{(time.time()-start)/60} minutes",file = file)
-
   
             #update most recent model
             torch.save(network.state_dict(), recent_model_save_state_path)
@@ -317,6 +310,5 @@ def loop():
             np.save(memory_periodic_save_path,mem_save_state)
             
 
-        #start = time.time()
 
     
