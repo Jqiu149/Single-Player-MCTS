@@ -23,7 +23,11 @@ args =get_input()
 #environment settings
 env_module = import_module(f".envs.{args.env_folder}.{args.env_name}", __name__.split(".")[-2])
 
-problem_specific_stats = import_module(f".envs.{args.env_folder}.additional_statistics",__name__.split(".")[-2]).statistic_functions
+try:
+    problem_specific_stats = import_module(f".envs.{args.env_folder}.additional_statistics",__name__.split(".")[-2]).statistic_functions
+except ModuleNotFoundError as e:
+    print(f"counldn't find module for problem_specific_stats. error is:{e}")
+    problem_specific_stats = {}
 
 
 print(f"using {args.env_folder}/{args.env_name} as the environment")
