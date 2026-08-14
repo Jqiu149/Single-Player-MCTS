@@ -40,8 +40,9 @@ assert args.max_step >0
 
 
 env_module.MAX_STEP = args.max_step
-env_module.STEP_PENALTY = args.step_penalty
 env_module.HIST_LEN = args.hist_len
+
+env_module.apply_step_penalty=env_module.select_step_penalty(args.step_penalty)
 
 try:
     env_module.start_obj_generator = env_module.select_init_method(args.init_method, args.custom_init_list)

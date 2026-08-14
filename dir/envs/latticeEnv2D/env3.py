@@ -9,10 +9,10 @@ from .problem_specific_helpers import *
 
 
 start_obj_generator= None
-MAX_STEP = None
-STEP_PENALTY = None
-HIST_LEN = None
+apply_step_penalty= None
 
+MAX_STEP = None
+HIST_LEN = None
 
 
 #actions
@@ -131,10 +131,7 @@ class Env(StaticEnv):
 
 		current_magnitude= min([np.linalg.norm(v) for v in state[0:2]])
 
-		score = ( state[-2]/current_magnitude)**2 - step_idx*STEP_PENALTY
-
-
-		#score = ( state[-2]/current_magnitude)**2 * (1- step_idx*STEP_PENALTY)
+		score = apply_step_penalty( ( state[-2]/current_magnitude)**2, step_idx	)
 
 		return	score
 

@@ -52,7 +52,7 @@ def get_input():
     parser.add_argument("--max_step", type=int, default=300, 
             help="the max step number the agent can take before we end the episode.")
 
-    parser.add_argument("--step_penalty", type=float, default = 1e-5, help = "penality to apply to reward for each step taken")
+    parser.add_argument("--step_penalty", type=str, default = "flat,pen_val==0.00001", help = "specify the step penatly you want applied and the value of teh step penalty")
 
     parser.add_argument("--hist_len", type=int, default=0, help = "how many vectors to keep in history")
 

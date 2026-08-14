@@ -6,9 +6,12 @@ from .problem_specific_helpers import *
 
 
 
+#will be functions
 start_obj_generator= None
+apply_step_penalty = None
+
+#will be constant non-negative integers
 MAX_STEP = None
-STEP_PENALTY = None
 HIST_LEN = None
 
 
@@ -116,10 +119,10 @@ class Env(StaticEnv):
 		"""
 
 		min_magnitude= min([np.linalg.norm(v) for v in state[0:2]])
-	#	score = ( state[-2]/min_magnitude)**2 - step_idx*STEP_PENALTY
-
-
-		score = ( state[-2]/min_magnitude)**2 * (1- step_idx*STEP_PENALTY)
+		score = apply_step_penalty ( 
+                    pre_penalty_reward = ( state[-2]/min_magnitude)**2 ,
+                    step_count =  step_idx
+                )
 
 		return	score
 

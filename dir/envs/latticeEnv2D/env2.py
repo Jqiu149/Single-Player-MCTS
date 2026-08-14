@@ -9,10 +9,14 @@ from ..helper import *
 from .problem_specific_helpers import *
 
 
+#will be functions
 start_obj_generator= None
+apply_step_penalty = None
+
+#will be constant non-negative integers
 MAX_STEP = None
-STEP_PENALTY = None
 HIST_LEN = None
+
 
 
 #actions
@@ -132,8 +136,8 @@ class Env(StaticEnv):
 
 		if current_magnitude == 0:
 			return -50	
-		score = ( state[-2]/current_magnitude)**2 - step_idx*STEP_PENALTY
-		#score = ( state[-2]/current_magnitude)**2 * (1- step_idx*STEP_PENALTY)
+
+		score = apply_step_penalty ( ( state[-2]/current_magnitude)**2, step_idx ) 
 		return	score
 
 
