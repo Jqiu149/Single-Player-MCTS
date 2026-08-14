@@ -64,7 +64,7 @@ def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi, maxAngleDiff=2*np.pi):
 # "random_generator" to use the random_basis function
 # "custom_list" to use the list 
 
-def LagrangeReduce(v1,v2):
+def LagrangeReduce(v1,v2, returnSteps= False):
 	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
 	assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
 	assert pairVectorsR2LinearIndep(v1,v2)
@@ -73,20 +73,27 @@ def LagrangeReduce(v1,v2):
 	norm2Squared = np.dot(v2,v2) 
 
 	done = False
-	stepCount = 0
+	swap_count = 0
+	subtract_count = 0
 	while(not done):
-		stepCount+=1
 
 		if(norm1Squared> norm2Squared):
 			v1,v2 = v2,v1
 			norm1Squared,norm2Squared = norm2Squared,norm1Squared
 
+			swap_count+=1
+
 		u = round( (np.dot(v1,v2))/ norm1Squared)
 		v2 = v2-u*v1
 		norm2Squared= np.dot(v2,v2) 
 
+		subtract_count += abs(u)
+
 		if(norm1Squared<= norm2Squared):
 			done = True
+
+	if returnSteps:
+		return swap_count, subtract_count
 
 	return [v1, v2]
 

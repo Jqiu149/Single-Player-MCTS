@@ -112,6 +112,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     #assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
 
     network.eval()
+
     obs_list = []
     action_list_list= []
     reward_list = []
@@ -144,18 +145,21 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
 
     #also would be nice to be able to get performance on specified subsets of training 
-    print(f"avg_reward:{mean_reward}") 
-    print(f"std_reward:{std_reward}")      
-    print(f"min_rewards:{min_rewards}")
-    print(f"max_rewards:{max_rewards}")
-    print()
+    statistics= {}
+    statistics["avg_reward"]= mean_reward
+    statistics["std_reward"]= std_reward
+    statistics["min_rewards"]= min_rewards
+    statistics["max_rewards"]= max_rewards
 
+    for stat,value in statistics.items():
+        print(f"{stat}:{value}")
+     
     with open(log_file_path, "a") as log_file:
-        print("train_episode:", current_train_episode,file= log_file)
-        print(f"avg_reward:{mean_reward}",file= log_file) 
-        print(f"std_reward:{std_reward}",file= log_file)      
-        print(f"min_reward:{min_rewards}",file= log_file)
-        print(f"max_reward:{max_rewards}",file= log_file) 
+        for stat,value in statistics.items():
+            print(f"{stat}:{value}", file = log_file) 
+        
+        print("__log__", statistics, file = log_file)
+
         print(file = log_file)
 
     with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
@@ -171,8 +175,6 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
 
     return mean_reward, np.mean(min_rewards)
-
-
 
 
 def loop():
@@ -231,11 +233,6 @@ def loop():
         #update most recent model and memory
         if i % args.eval_freq== 0: 
             mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
-
-#               plt.plot(value_losses, label="value loss")
-#               plt.plot(prob_losses, label="action probability loss")
-#               plt.legend()
-#               plt.show()
 
          
             #update most recent model
