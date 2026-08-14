@@ -1,5 +1,5 @@
 import numpy as np
-from problem_specific_helpers import *
+from .problem_specific_helpers import *
 #plan is for each problem to write any additional statistics that are problem specific in a file in the folder. in additon to like helper functions used for them i guess
 
 
@@ -15,8 +15,7 @@ from problem_specific_helpers import *
 
 statistic_functions = {}
 
-
 def lagrange_step_counts(obs_list):
-    return LagrangeReduce(obs_list[0][0], obs_list[0][1])
+    return LagrangeReduce(obs_list[0][0].astype(int), obs_list[0][1].astype(int), returnSteps = True)
 
-statistics_functions["lagrange_step_counts"] = (lagrange_step_counts)
+statistic_functions["lagrange_step_counts"] = (lagrange_step_counts)

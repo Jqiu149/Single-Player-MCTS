@@ -21,7 +21,8 @@ def pick_from_basis_list():
 
 
 def pairVectorsR2LinearIndep(v1,v2):
-		return	v1[0]*v2[1] != v2[0]*v1[1]
+	return	v1[0]*v2[1] != v2[0]*v1[1]
+
 
 def polarToCartesian( angle, magnitude): 
 	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
@@ -67,7 +68,7 @@ def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi, maxAngleDiff=2*np.pi):
 def LagrangeReduce(v1,v2, returnSteps= False):
 	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
 	assert np.shape(v2) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"
-	assert pairVectorsR2LinearIndep(v1,v2)
+	assert pairVectorsR2LinearIndep(v1,v2), f"v1:{v1}, v2:{v2}"
 
 	norm1Squared = np.dot(v1,v1) 
 	norm2Squared = np.dot(v2,v2) 
@@ -93,7 +94,7 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 			done = True
 
 	if returnSteps:
-		return swap_count, subtract_count
+		return [swap_count, subtract_count]
 
 	return [v1, v2]
 

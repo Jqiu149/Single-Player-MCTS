@@ -22,6 +22,10 @@ args =get_input()
 
 #environment settings
 env_module = import_module(f".envs.{args.env_folder}.{args.env_name}", __name__.split(".")[-2])
+
+problem_specific_stats = import_module(f".envs.{args.env_folder}.additional_statistics",__name__.split(".")[-2]).statistic_functions
+
+
 print(f"using {args.env_folder}/{args.env_name} as the environment")
 
 assert args.max_step >0
@@ -61,13 +65,13 @@ easy_acess_vars_file_path = save_dir + "easy_acess_vars.txt"
 model_load_path = args.reload_model if args.reload_model!="" else recent_model_save_state_path
 mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_path
 
+
 #mcts settings
 mcts.C_PUCT = args.c_puct
 mcts.TEMP_THRESHOLD=args.temp_threshold
 
 
 #policy settings
-
 assert args.emb_dim % args.num_heads ==0, "pytorch requires the number of heads divide the embedding dimension"
 
 trainer=Trainer( lambda: Policy(
@@ -87,7 +91,7 @@ trainer=Trainer( lambda: Policy(
 network = trainer.step_model
 
 
-#memroy stuff
+#memory stuff
 mem = ReplayMemory(args.memory_size,
                    { "ob": np.float32,
                      "pi": np.float32,
@@ -106,74 +110,92 @@ except FileNotFoundError:
 
 
 
-# evaluate and report on current agent state
+# function to evaluate and report on current agent state
 # return best mean and min
 def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
     #assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
 
     network.eval()
 
-    obs_list = []
-    action_list_list= []
-    reward_list = []
-    done_state_list=[]
+    stats_list= {} 
+    stats_list["obs"]= []
+    stats_list["action_list"]= []
+    stats_list["reward"]= []
+    for stat in problem_specific_stats.keys():
+        stats_list[stat] = []
+
 
     print("-"*50 +str(current_train_episode)+ "-"*50)
+
+
+    # do the validation runs and print them and info about them out
     with torch.no_grad():
         for i in range(num_iterations):
             obs, pis, returns, reward, done_state, action_list= execute_episode_eval(network,
                                                                      args.num_simulations,
                                                                     env_module.Env )
-            print("observation list:")
+            print("observation_list:")
             print(obs)
-            print("action list:")
+            print("action_list:")
             print(action_list)
             print("pis:")
             print(pis)
             print("reward:", reward)
 
-            obs_list.append(obs)
-            action_list_list.append(action_list)
-            reward_list.append(reward)
-            done_state_list.append(done_state)
+            stats_list["obs"].append(obs)
+            stats_list["action_list"].append(action_list)
+            stats_list["reward"].append(reward)
 
-    indices_sorted_by_reward =np.argsort(reward_list)
-    mean_reward= np.mean(reward_list)          
-    std_reward = np.std(reward_list)            
-    min_rewards= [ reward_list[i] for i in indices_sorted_by_reward[0:num_min_to_report]]
-    max_rewards = [ reward_list[i] for i in indices_sorted_by_reward[-num_max_to_report:None]]
+            for stat_name, stat_fn in problem_specific_stats.items():
+                stat_val = stat_fn(obs)
+                stats_list[stat_name].append(stat_val)
+                print(f"{stat_name}: {stat_val}")
+                
+            print()
+ 
+    #print basically the same things but order by reward into saved file
+    indices_sorted_by_reward =np.argsort(stats_list["reward"])
+ 
+    with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
+        #... our naming isn't great here but idk what do so... leaving for now ig :D 
+        for index_num, i in enumerate(indices_sorted_by_reward):
+            print(index_num, file = file)
 
+            for key,val in stats_list.items():
+                print(key,file=file)
+                print(val[i],file=file)
+            print(file=file)
 
-    #also would be nice to be able to get performance on specified subsets of training 
+    #probbaly should rename stuff but...
+
+    # storing the like data about overall validation run
     statistics= {}
-    statistics["avg_reward"]= mean_reward
-    statistics["std_reward"]= std_reward
-    statistics["min_rewards"]= min_rewards
-    statistics["max_rewards"]= max_rewards
-
+    statistics["avg_reward"]= np.mean(stats_list["reward"]).item()
+    statistics["std_reward"]= np.std(stats_list["reward"]).item()
+    statistics["min_rewards"]=[ stats_list["reward"][i].item() for i in indices_sorted_by_reward[0:num_min_to_report]]
+    statistics["max_rewards"]= [ stats_list["reward"][i].item() for i in indices_sorted_by_reward[-num_max_to_report:None]]
+    
+    for stat_name in problem_specific_stats.keys():
+        avg = np.mean(stats_list[stat_name], axis = 0) 
+        avg = avg.item() if np.isscalar(avg) else avg.tolist()
+        statistics[stat_name + "_avg(s)"] = avg
+ 
+    
+    print()
     for stat,value in statistics.items():
         print(f"{stat}:{value}")
+
      
     with open(log_file_path, "a") as log_file:
         for stat,value in statistics.items():
             print(f"{stat}:{value}", file = log_file) 
         
-        print("__log__", statistics, file = log_file)
+        print("__log__", json.dumps(statistics), file = log_file) 
+        #this line is so it's easier to read basically for us later. like... if file lengths vary/want to add more statistics, this line will stay one line instead of being multipel so its easiest to just read this line instead of variable number of lnies to read yknow... i'm tired :D
 
         print(file = log_file)
 
-    with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
-        #... our naming isn't great here but idk what do so... leaving for now ig :D 
-        for index_num, i in enumerate(indices_sorted_by_reward):
-            print(index_num, file = file)
-            print("observation list:", file=file)
-            print(obs_list[i], file=file)
-            print("action list:", file = file)
-            print(action_list_list[i], file=file)
-            print(reward_list[i], file=file)
-            print(f"final state: {done_state_list[i]}", file=file)
-
-
+ 
     return mean_reward, np.mean(min_rewards)
 
 
