@@ -2,7 +2,7 @@ import numpy as np
 import copy
 from ..static_env import StaticEnv
 from ..helper import parse_init_method
-from .init_helpers import *
+from .problem_specific_helpers import *
 
 
 
@@ -32,8 +32,6 @@ def select_init_method(method, custom_list):
 
 
 
-
-
 basis_generator= pick_from_basis_list
 MAX_STEP = 300
 STEP_PENALTY = 1e-5
@@ -44,6 +42,11 @@ HIST_LEN = 5
 END = 0
 S = 1
 T = 2
+
+
+def get_obs_shape():
+	return [2 + HIST_LEN, 2]
+
 
 	
 #states will be list of...

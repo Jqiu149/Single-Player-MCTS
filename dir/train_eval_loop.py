@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import pathlib
 import json
+from importlib import import_module
 
 from .trainer import Trainer 
 from .replay_memory import ReplayMemory
@@ -19,43 +20,25 @@ from .input_reading import get_input
 
 args =get_input()
 
+#environment settings
+env_module = import_module(f".envs.{args.env_folder}.{args.env_name}", __name__.split(".")[-2])
+print(f"using {args.env_folder}/{args.env_name} as the environment")
 
-if args.env == "env1":
-    print("using env1")
-    from .envs.latticeEnv2D import lattice_env as env_module
-
-    vector_dim = 2
-    n_actions=3
-    obs_shape = [2+args.hist_len, vector_dim]
+assert args.max_step >0
 
 
-elif args.env == "env2":
-    print("using env2")
-    from .envs.latticeEnv2D import env2 as env_module
-
-    vector_dim = 2
-    n_actions=5
-    obs_shape = [3+args.hist_len, vector_dim]
-
-elif args.env == "env3":
-    print("using env3")
-    from .envs.latticeEnv2D import env3 as env_module
-
-    vector_dim = 2
-    n_actions=5
-    obs_shape = [2+args.hist_len, vector_dim]
-else:
-    ValueError("Environment not known")
+env_module.MAX_STEP = args.max_step
+env_module.STEP_PENALTY = args.step_penalty
+env_module.HIST_LEN = args.hist_len
+env_module.select_init_method(args.init_method, args.custom_init_list)
 
 
-if args.policy == "policy1":
-    from .policies.encoder_policy import Policy
-    print("using policy1")
-elif args.policy == "policy2":
-    from .policies.policy2 import Policy
-    print("using policy2")
-else:
-    ValueError("No such policy")
+n_actions = env_module.Env.n_actions
+obs_shape = env_module.get_obs_shape()
+
+policy_module=import_module(f".policies.{args.policy}", __name__.split(".")[-2])
+Policy =getattr(policy_module, "Policy")
+print(f"using policy/model {args.policy}")
 
 #logging and saving state info paths
 assert args.dump_path != "" and args.exp_name != "" and args.exp_id !="", "one of dump_path, exp_name, exp_id wasn't specified"
@@ -78,15 +61,6 @@ easy_acess_vars_file_path = save_dir + "easy_acess_vars.txt"
 model_load_path = args.reload_model if args.reload_model!="" else recent_model_save_state_path
 mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_path
 
-
-#environment settings
-#TODO make it so you can select the environment and ig figure out what other things need to change for those...
-assert args.max_step >0
-env_module.MAX_STEP = args.max_step
-env_module.STEP_PENALTY = args.step_penalty
-env_module.HIST_LEN = args.hist_len
-env_module.select_init_method(args.init_method, args.custom_init_list)
-
 #mcts settings
 mcts.C_PUCT = args.c_puct
 mcts.TEMP_THRESHOLD=args.temp_threshold
@@ -98,7 +72,7 @@ assert args.emb_dim % args.num_heads ==0, "pytorch requires the number of heads 
 
 trainer=Trainer( lambda: Policy(
                             num_encoder_layers = args.num_layers, 
-                            input_dim=vector_dim, 
+                            input_dim= obs_shape[-1], 
                             emb_dim = args.emb_dim,
                             transformer_feedforward_dim = args.transformer_feedforward_dim,
                             encoder_nhead =args.num_heads,
@@ -122,6 +96,7 @@ mem = ReplayMemory(args.memory_size,
                      "pi": [n_actions],
                      "return": []},
                    batch_size = args.batch_size)
+
 
 try:
     mem.add_all(np.load(mem_load_path,allow_pickle=True).item())

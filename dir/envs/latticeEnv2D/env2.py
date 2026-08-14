@@ -5,7 +5,7 @@ from functools import partial
 from scipy.stats import loguniform
 from ..static_env import StaticEnv
 from .. helper import parse_init_method
-from . init_helpers import *
+from .problem_specific_helpers import *
 
 
 def select_init_method(method, custom_list): 
@@ -33,8 +33,6 @@ def select_init_method(method, custom_list):
 		ValueError (f"method chosen isn't one of the options, given {method}")
 
 
-
-
 basis_generator= pick_from_basis_list
 MAX_STEP = 300
 STEP_PENALTY = 1e-5
@@ -43,16 +41,16 @@ HIST_LEN = 5
 
 #actions
 END = 0
-
 ADD_V0= 1
 SUB_V0= 2
-
 ADD_V1= 3
 SUB_V1= 4
 
 
-#states will be list of...
-#2 np arrays of legnth 2: 2 linearly indep vectors of dim 2 defining the lattice
+
+def get_obs_shape():
+	return [3 + HIST_LEN, 2]
+
 #another np array of length 2 that is the 'current' vector that will be asses for the score
 #HIST_LEN many np arrays of length 2: the past HIST_LEN many vectors
 #	the magnitude of the smallest vector in the lattice
@@ -61,7 +59,6 @@ SUB_V1= 4
 
 class Env(StaticEnv):
 	n_actions= 5
-
 	@staticmethod
 	def next_state(state, action):
 		"""
@@ -153,14 +150,9 @@ class Env(StaticEnv):
 		current_magnitude= np.linalg.norm(state[2])
 
 		if current_magnitude == 0:
-			return -50
-		
-
+			return -50	
 		score = ( state[-2]/current_magnitude)**2 - step_idx*STEP_PENALTY
-
-
 		#score = ( state[-2]/current_magnitude)**2 * (1- step_idx*STEP_PENALTY)
-
 		return	score
 
 

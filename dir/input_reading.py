@@ -38,7 +38,9 @@ def get_input():
 
 
 #environment related
-    parser.add_argument("--env", type = str, default = "env1")
+
+    parser.add_argument("--env_folder", type = str, default = "latticeEnv2D", help = "the folder your environment is in")
+    parser.add_argument("--env_name", type = str, default = "env1", help = "the name of the environemnt file without the '.py' at the end")
 
     parser.add_argument("--init_method", type=str, default="default", 
         help="""specify the method used to choose inputs/starting positions for the agent. look for the select_init method in the env for the options. Generally if you're using a function to generate, pass in the option, then the argument name you want followed by an equal sign and the value you want. use commas as seperators between the init method and the arguments. e.g give init_method,arg1=x,arg2=y

@@ -5,7 +5,7 @@ from functools import partial
 from scipy.stats import loguniform
 from ..static_env import StaticEnv
 from .. helper import parse_init_method
-from . init_helpers import *
+from .problem_specific_helpers import *
 
 
 def select_init_method(method, custom_list): 
@@ -33,8 +33,6 @@ def select_init_method(method, custom_list):
 		ValueError (f"method chosen isn't one of the options, given {method}")
 
 
-
-
 basis_generator= pick_from_basis_list
 MAX_STEP = 300
 STEP_PENALTY = 1e-5
@@ -49,6 +47,11 @@ SUB_V0= 2
 
 ADD_V1= 3
 SUB_V1= 4
+
+
+def get_obs_shape():
+	return [2 + HIST_LEN, 2]
+
 
 
 #states will be list of...
