@@ -19,6 +19,9 @@ from .mcts import execute_episode_eval
 from .input_reading import get_input
 
 
+program_start_time = time.time()
+
+
 args =get_input()
 
 #environment settings
@@ -39,8 +42,12 @@ assert args.max_step >0
 env_module.MAX_STEP = args.max_step
 env_module.STEP_PENALTY = args.step_penalty
 env_module.HIST_LEN = args.hist_len
-env_module.select_init_method(args.init_method, args.custom_init_list)
 
+try:
+    env_module.start_obj_generator = env_module.select_init_method(args.init_method, args.custom_init_list)
+except (ModuleNotFoundError, AttributeError) as e:
+    print("error occured trying to call environment select_init_method(start_obj_generator, init_method, acustom_list). if your code doesn't need this i guess it's fine")
+    print(e)
 
 n_actions = env_module.Env.n_actions
 obs_shape = env_module.get_obs_shape()
@@ -192,6 +199,8 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
      
     with open(log_file_path, "a") as log_file:
+        print(f"eval end time: { (time.time()-program_start_time)/60} minutes", file = log_file)
+
         print("train_episode:", current_train_episode,file= log_file)
         for stat,value in statistics.items():
             print(f"{stat}:{value}", file = log_file) 
@@ -241,9 +250,6 @@ def loop():
     #actual training now ig
 
     for i in range(1,args.num_train_episodes+1):
-
-
-
         with torch.no_grad():
             obs, pis, returns, total_reward, done_state = execute_episode(network,
                                                                     args.num_simulations,
@@ -264,6 +270,8 @@ def loop():
    
         #evaluate agent, then update most recent model and memory
         if i % args.eval_freq== 0: 
+            with open(log_file_path, "a+") as file:
+                print(f"train end time: { (time.time()-program_start_time)/60} minutes", file = file)
 
             mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
   

@@ -2,9 +2,18 @@ import numpy as np
 import random
 from functools import partial
 from scipy.stats import loguniform
+from .. helper import *
 
 
+def pairVectorsR2LinearIndep(v1,v2):
+	return	v1[0]*v2[1] != v2[0]*v1[1]
 
+
+def polarToCartesian( angle, magnitude): 
+	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
+
+
+#generator stuff
 
 #for if we have a specific list we want to take from
 #set this to the list you want to be taking from, the value set below is more of an example / default ig
@@ -18,14 +27,6 @@ basis_list = [
 
 def pick_from_basis_list():
 	return random.choice(basis_list)
-
-
-def pairVectorsR2LinearIndep(v1,v2):
-	return	v1[0]*v2[1] != v2[0]*v1[1]
-
-
-def polarToCartesian( angle, magnitude): 
-	return [np.cos(angle)*magnitude, np.sin(angle)*magnitude]
 
 
 #for if you want to choose a basis randomly
@@ -59,11 +60,43 @@ def random_basis(m=10000,minAngleDiff=1e-4*2*np.pi, maxAngleDiff=2*np.pi):
 
 	return [np.array(v1), np.array(v2)]
 
+
+
 #used to set the value of basis generator
 # for method...
 # give "default_list" to be using the existing basis_list defined above
 # "random_generator" to use the random_basis function
 # "custom_list" to use the list 
+def select_init_method(method, custom_list): 
+	method, args = parse_init_method(method)
+	if method == "default":
+		return pick_from_basis_list
+
+	elif method == "random_generator":
+		return partial(random_basis, **args)
+        
+	elif method== "custom_list":
+		assert np.shape(custom_list)[1:] == (2,2), f"custom_list shape is {np.shape(custom_list)}"
+		custom_list = [ [np.array(vector) for vector in vector_list ] for vector_list in custom_list]
+		assert all( pairVectorsR2LinearIndep(basis_vectors[0],basis_vectors[1]) for basis_vectors in custom_list)
+
+		global basis_list
+		basis_list = custom_list
+
+		print("basis_list is:", basis_list)
+
+		return pick_from_basis_list
+
+	else:
+		ValueError (f"method chosen isn't one of the options, given {method}")
+
+
+
+
+
+
+
+
 
 def LagrangeReduce(v1,v2, returnSteps= False):
 	assert np.shape(v1) == (2,), f"LagrangeReduce expects v1 to be shape (2,0), v1 is ${v1} and v2 is ${v2}"

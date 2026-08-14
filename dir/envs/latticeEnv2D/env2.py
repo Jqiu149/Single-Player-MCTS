@@ -4,40 +4,21 @@ import	copy
 from functools import partial
 from scipy.stats import loguniform
 from ..static_env import StaticEnv
-from .. helper import parse_init_method
+
+from ..helper import *
 from .problem_specific_helpers import *
 
 
-def select_init_method(method, custom_list): 
-	global basis_generator
-
-	method, args = parse_init_method(method)
-
-	if method == "default":
-		basis_generator = pick_from_basis_list
-	elif method == "random_generator":
-		basis_generator = partial(random_basis, **args)
-	elif method== "custom_list":
-		assert np.shape(custom_list)[1:] == (2,2), f"custom_list shape is {np.shape(custom_list)}"
-		custom_list = [ [np.array(vector) for vector in vector_list ] for vector_list in custom_list]
-
-		assert all( pairVectorsR2LinearIndep(basis_vectors[0],basis_vectors[1]) for basis_vectors in custom_list)
-
-		global basis_list
-		basis_list = custom_list
-
-		print("basis_list is:", basis_list)
-
-		basis_generator = pick_from_basis_list
-	else:
-		ValueError (f"method chosen isn't one of the options, given {method}")
+start_obj_generator= None
+MAX_STEP = None
+STEP_PENALTY = None
+HIST_LEN = None
 
 
-basis_generator= pick_from_basis_list
-MAX_STEP = 300
-STEP_PENALTY = 1e-5
-HIST_LEN = 5
-
+#actions
+END = 0
+S = 1
+T = 2
 
 #actions
 END = 0
@@ -116,7 +97,7 @@ class Env(StaticEnv):
 		Returns the initial state of the environment.
 		"""
 		
-		start_basis= basis_generator()
+		start_basis= start_obj_generator()
 		smallest_vector = LagrangeReduce(start_basis[0], start_basis[1])[0]
 		smallest_m = np.linalg.norm(smallest_vector)
 
