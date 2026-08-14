@@ -133,7 +133,9 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     stats_list= {} 
     stats_list["obs"]= []
     stats_list["action_list"]= []
+    stats_list["action_list_len"]= []
     stats_list["reward"]= []
+
     for stat in problem_specific_stats.keys():
         stats_list[stat] = []
 
