@@ -151,12 +151,14 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
             print(obs)
             print("action_list:")
             print(action_list)
+            print(f"action_list len: {len(action_list)}")
             print("pis:")
             print(pis)
             print("reward:", reward)
 
             stats_list["obs"].append(obs)
             stats_list["action_list"].append(action_list)
+            stats_list["action_list_len"].append(len(action_list))
             stats_list["reward"].append(reward)
 
             for stat_name, stat_fn in problem_specific_stats.items():
@@ -183,6 +185,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 
     # storing the like data about overall validation run
     statistics= {}
+    statistics["train_episode"] = current_train_episode
     statistics["avg_reward"]= np.mean(stats_list["reward"]).item()
     statistics["std_reward"]= np.std(stats_list["reward"]).item()
     statistics["min_rewards"]=[ stats_list["reward"][i].item() for i in indices_sorted_by_reward[0:num_min_to_report]]
@@ -202,7 +205,6 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
     with open(log_file_path, "a") as log_file:
         print(f"eval end time: { (time.time()-program_start_time)/60} minutes", file = log_file)
 
-        print("train_episode:", current_train_episode,file= log_file)
         for stat,value in statistics.items():
             print(f"{stat}:{value}", file = log_file) 
         
