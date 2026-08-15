@@ -28,9 +28,9 @@ args =get_input()
 env_module = import_module(f".envs.{args.env_folder}.{args.env_name}", __name__.split(".")[-2])
 
 try:
-    problem_specific_stats = import_module(f".envs.{args.env_folder}.additional_statistics",__name__.split(".")[-2]).statistic_functions
-except ModuleNotFoundError as e:
-    print(f"counldn't find module for problem_specific_stats. error is:{e}")
+    problem_specific_stats = env_module.statistic_functions
+except AttributeError as e:
+    print(f"counldn't find problem_specific_stats in env. error is:{e}")
     problem_specific_stats = {}
 
 
@@ -164,7 +164,7 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
             stats_list["reward"].append(reward)
 
             for stat_name, stat_fn in problem_specific_stats.items():
-                stat_val = stat_fn(obs)
+                stat_val = stat_fn(obs, done_state)
                 stats_list[stat_name].append(stat_val)
                 print(f"{stat_name}: {stat_val}")
                 

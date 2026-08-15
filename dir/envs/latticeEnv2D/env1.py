@@ -128,3 +128,6 @@ class Env(StaticEnv):
 
 
 
+statistic_functions=  {
+        "lagrange_step_counts": lagrange_step_counts
+        }
