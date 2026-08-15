@@ -74,7 +74,7 @@ def select_init_method(method, custom_list):
 
 	elif method == "random_generator":
 		return partial(random_basis, **args)
-        
+		
 	elif method== "custom_list":
 		assert np.shape(custom_list)[1:] == (2,2), f"custom_list shape is {np.shape(custom_list)}"
 		custom_list = [ [np.array(vector) for vector in vector_list ] for vector_list in custom_list]
@@ -147,5 +147,11 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 
 #assumes observations store the basis for the lattice as the first two members of an observation
 def lagrange_step_counts(obs_list, final_state):
-    return LagrangeReduce(obs_list[0][0].astype(int), obs_list[0][1].astype(int), returnSteps = True)
+	return LagrangeReduce(obs_list[0][0].astype(int), obs_list[0][1].astype(int), returnSteps = True)
 
+
+#assumes state second last member is the magnitude of the minimum size vector
+def reached_min_mag(obs_list, final_state):
+	min_magnitude= min([np.linalg.norm(v) for v in final_state[0:2]])
+	return final_state[-2] == min_magnitude
+   
