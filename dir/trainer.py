@@ -22,19 +22,33 @@ class Trainer:
     def __init__(self, Policy, model_path="",  lr=0.002, weight_decay=1e-4, momentum = 0, max_grad_norm= torch.inf):
 
         self.step_model = Policy()
-        self.max_grad_norm = max_grad_norm
-        if(model_path != "" and Path(model_path).is_file() ):
-           self.step_model.load_state_dict(torch.load(model_path, weights_only=True)) 
-           print("loaded_model")
-
-        value_criterion = nn.MSELoss()
-        optimizer = torch.optim.SGD(self.step_model.parameters(),
+        self.optimizer = torch.optim.SGD(self.step_model.parameters(),
                                     lr=lr,
                                     weight_decay = weight_decay,
                                     momentum = momentum
                                     )
 
-        #observations/state, search_pis, returns are ig the probabilities and values fromMCTS that are being used as targets in trainign
+        self.max_grad_norm = max_grad_norm
+        if(model_path != "" and Path(model_path).is_file() ):
+            checkpoint = torch.load(model_path,weights_only=True)
+
+            #case for the older saves where just saved a model and no optimzer...
+            if not "policy" in checkpoint:
+                self.step_model.load_state_dict(checkpoint) 
+                print("loaded_model")
+            else:
+                self.step_model.load_state_dict(checkpoint["policy"])
+                self.optimizer.load_state_dict(checkpoint["optimizer"])
+                print("loaded_model")
+
+                for g in self.optimizer.param_groups:
+                    g['lr'] = lr
+                    g['momentum'] = momentum
+                    g['weight_decay'] = weight_decay
+
+
+        self.value_criterion = nn.MSELoss()
+                #observations/state, search_pis, returns are ig the probabilities and values fromMCTS that are being used as targets in trainign
         #ig assuming that are numpy objects
         def train(obs, search_pis, returns):
 
@@ -48,7 +62,7 @@ class Trainer:
                 returns = torch.from_numpy(returns)
 
                 
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
                 logits, policy, value = self.step_model(obs) # the policy isn't actualyl used here... but it's just argmax of logits
 
 
@@ -57,7 +71,7 @@ class Trainer:
                                                    * logsoftmax(logits), dim=1)) #using log softmax is like equal to just log compoenet wise of softmax, but i think apprently more numerically stable in implementation? no divison yay?
                                                                                 # thinkg the * between tensors is compoentwise multiplciation?
                                                                                 #but yeah just taking mean of policy losses
-                value_loss = value_criterion(value, returns)                    # default for this since not specified when constructed guy is also taking mean of losses
+                value_loss = self.value_criterion(value, returns)                    # default for this since not specified when constructed guy is also taking mean of losses
 
                 #print(value,logits,  returns, search_pis)
                 #print("pol loss", policy_loss)
@@ -71,7 +85,7 @@ class Trainer:
 
                 #print(f"grad_norm: {grad_norm}")
 
-                optimizer.step()
+                self.optimizer.step()
 
                 return value_loss.data.numpy(), policy_loss.data.numpy()
 

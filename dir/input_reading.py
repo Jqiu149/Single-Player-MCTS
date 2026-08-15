@@ -11,7 +11,6 @@ def get_input():
     parser.add_argument("--exp_name", type=str, default="",help="Experiment name")
     parser.add_argument("--exp_id", type=str, default="",help="Experiment ID")
 
-
 #trainer settings
     parser.add_argument('--eval_only', action='store_true', help = "pretty sure we haven't implemented this yet sorry...")
 
@@ -20,7 +19,7 @@ def get_input():
     parser.add_argument("--eval_freq", type=int, default=50, help="how often should we evaluate the model")
     parser.add_argument("--num_eval_iterations", type=int, default=1, help="how many 'games' do we play in the evaluation step")
 
-    parser.add_argument("--save_periodic", type=int, default=0,help="In addition to saving the most recent policy, save the policy periodically every 'save_periodic' training episodes. (0 to disable)")
+    parser.add_argument("--save_periodic", type=int, default=0,help="In addition to saving the most recent policy, save the policy periodically every 'save_periodic' evaluation steps. (0 to disable)")
 
     parser.add_argument("--memory_size", type=int, default=3000, help="number of most recent datapoints from MCTS to keep to train neural net with")
 

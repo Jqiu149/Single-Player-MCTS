@@ -281,7 +281,11 @@ def loop():
             mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
   
             #update most recent model
-            torch.save(network.state_dict(), recent_model_save_state_path)
+            checkpoint = {
+                        "policy": network.state_dict(),
+                        "optimizer": trainer.optimizer.state_dict()
+                    }
+            torch.save(checkpoint, recent_model_save_state_path)
             print("-"*50 + "model saved" + "-"*50)
 
             #save most recent memory state
@@ -296,12 +300,12 @@ def loop():
             #update best mean or best min network if needed
             if mean_rew > best_mean: 
                 best_mean = mean_rew
-                torch.save(network.state_dict(), best_mean_model_save_state_path)
+                torch.save(checkpoint, best_mean_model_save_state_path)
 
                 np.save(best_mean_memory_file_path, mem_save_state)
             if mean_min_rew > best_min:
                 best_min = mean_min_rew
-                torch.save(network.state_dict(), best_min_model_save_state_path)
+                torch.save(checkpoint, best_min_model_save_state_path)
 
                 np.save(best_min_memory_file_path, mem_save_state)
 
@@ -313,15 +317,15 @@ def loop():
                 print(",".join(avg_value_losses),file = file)
                 print(",".join(avg_policy_losses),file = file)
 
-        #periodic save of model and memory state
-        if args.save_periodic > 0 and i % args.save_periodic ==0: 
-            model_periodic_save_path= save_dir+ f"{start_num_train_episodes+i}.pth"
-            torch.save(network.state_dict(), model_periodic_save_path)
+            #periodic save of model and memory state
+            if args.save_periodic > 0 and i % args.save_periodic ==0: 
+                model_periodic_save_path= save_dir+ f"{start_num_train_episodes+i}.pth"
+                torch.save(checkpoint, model_periodic_save_path)
 
-            memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
+                memory_periodic_save_path=save_dir+ f"mem-{start_num_train_episodes+i}.npy"
 
-            np.save(memory_periodic_save_path,mem_save_state)
-            
+                np.save(memory_periodic_save_path,mem_save_state)
+                
 
 
     
