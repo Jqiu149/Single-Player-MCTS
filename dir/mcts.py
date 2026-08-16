@@ -483,6 +483,8 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
     # Must run this once at the start, so that noise injection actually affects
     # the first action of the episode.
     first_node = mcts.root.select_leaf()   # like does the run down till find a leaf thing, which in this case is jsut the first node we have in the tree?
+
+    starting_state = first_node.state
     probs, vals = agent_netw.step(
         TreeEnv.get_obs_for_states([first_node.state]))
     #print(probs,vals)
@@ -490,7 +492,6 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
     action_list = []
     while True:
-
         current_simulations = mcts.root.N
 
         # We want `num_simulations` simulations per action not counting
@@ -518,8 +519,7 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
     obs = np.concatenate(mcts.obs)
 
 
-
     TEMP_THRESHOLD = original_TEMP_THRESHOLD 
 
-    return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state, action_list)
+    return (obs, mcts.searches_pi, ret, total_rew, mcts.root.state, action_list, starting_state)
 

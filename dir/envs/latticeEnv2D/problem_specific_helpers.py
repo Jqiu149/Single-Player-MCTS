@@ -145,13 +145,14 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 
 
 
-#assumes observations store the basis for the lattice as the first two members of an observation
-def lagrange_step_counts(obs_list, final_state):
-	return LagrangeReduce(obs_list[0][0].astype(int), obs_list[0][1].astype(int), returnSteps = True)
+#assumes start_state has first two entries being vectors defining lattice and they're numpy arrays ig?
+def lagrange_step_counts(obs_list, start_state, final_state):
+	print("start_state", start_state)
+	return LagrangeReduce(start_state[0].astype(int), start_state[1].astype(int), returnSteps = True)
 
 
 #assumes state second last member is the magnitude of the minimum size vector
-def reached_min_mag(obs_list, final_state):
+def reached_min_mag(obs_list, start_state, final_state):
 	min_magnitude= min([np.linalg.norm(v) for v in final_state[0:2]])
 	return final_state[-2] == min_magnitude
    
