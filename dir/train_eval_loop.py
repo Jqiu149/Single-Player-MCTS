@@ -131,6 +131,9 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 	network.eval()
 
 	stats_list= {} 
+
+	stats_list["start_state"]= []
+	stats_list["final_state"]= []
 	stats_list["obs"]= []
 	stats_list["action_list"]= []
 	stats_list["action_list_len"]= []
@@ -149,6 +152,10 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 			obs, pis, returns, reward, done_state, action_list, start_state= execute_episode_eval(network,
 																	 args.num_simulations,
 																	env_module.Env )
+			print("start_state:")
+			print(start_state)
+			print("final_state:")
+			print(done_state)
 			print("observation_list:")
 			print(obs)
 			print("action_list:")
@@ -158,6 +165,8 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 			print(pis)
 			print("reward:", reward)
 
+			stats_list["start_state"].append(start_state)
+			stats_list["final_state"].append(done_state)
 			stats_list["obs"].append(obs)
 			stats_list["action_list"].append(action_list)
 			stats_list["action_list_len"].append(len(action_list))
