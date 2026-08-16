@@ -264,6 +264,9 @@ def loop():
 	#actual training now ig
 
 	for i in range(1,args.num_train_episodes+1):
+        if i% 10==0:
+            print(f"{time.time()-start_time}:i")
+
 		with torch.no_grad():
 			obs, pis, returns, total_reward, done_state = execute_episode(network,
 																	args.num_simulations,
