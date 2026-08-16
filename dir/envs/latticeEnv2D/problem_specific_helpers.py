@@ -147,7 +147,6 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 
 #assumes start_state has first two entries being vectors defining lattice and they're numpy arrays ig?
 def lagrange_step_counts(obs_list, start_state, final_state):
-	print("start_state", start_state)
 	return LagrangeReduce(start_state[0].astype(int), start_state[1].astype(int), returnSteps = True)
 
 
