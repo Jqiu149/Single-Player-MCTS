@@ -298,7 +298,6 @@ def loop():
 						"optimizer": trainer.optimizer.state_dict()
 					}
 			torch.save(checkpoint, recent_model_save_state_path)
-			print("-"*50 + "model saved" + "-"*50)
 
 			#save most recent memory state
 
@@ -341,3 +340,4 @@ def loop():
 
 
 	
+			print("-"*50 + "model and memory saved? maybe give it a couple minutes to be safe..." + "-"*50)
