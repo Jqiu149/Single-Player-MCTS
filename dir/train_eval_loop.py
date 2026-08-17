@@ -117,6 +117,7 @@ mem = ReplayMemory(args.memory_size,
 
 try:
 	mem.add_all(np.load(mem_load_path,allow_pickle=True).item())
+	print(" loaded memory from {mem_load_path}")
 except FileNotFoundError:
 	print("no previous memory file (data used to train policy) was found. If you're not loading an existing model this is fine. If you are, it's up to you if you care...")
 	
@@ -265,7 +266,7 @@ def loop():
 
 	for i in range(1,args.num_train_episodes+1):
 		if i% (args.eval_freq/5) ==0:
-			print(f"{ ( time.time()-program_start_time) / 60 } min since program start : train episode {i}")
+			print(f"{ ( time.time()-program_start_time) // 60 } min since program start : train episode {i}")
 
 		with torch.no_grad():
 			obs, pis, returns, total_reward, done_state = execute_episode(network,
