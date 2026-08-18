@@ -64,13 +64,13 @@ assert args.batch_size < args.memory_size
 
 save_dir= args.dump_path + "/" + args.exp_name + "/" + args.exp_id	+ '/'
 log_file_path = save_dir + "log_file.txt"
-eval_examples_path = save_dir + "eval_"
+eval_examples_base_path = save_dir + "eval_"
 recent_memory_file_path = save_dir + "recent_mem.npy"
 best_mean_memory_file_path = save_dir + "best_mean_mem.npy"
 best_min_memory_file_path = save_dir + "best_min_mem.npy"
 recent_model_save_state_path = save_dir+ "checkpoint.pth"
-best_mean_model_save_state_path = save_dir + "best_mean.pth"
-best_min_model_save_state_path = save_dir + "best_min.pth"
+best_mean_model_save_state_path = save_dir + "best_mean_model.pth"
+best_min_model_save_state_path = save_dir + "best_min_model.pth"
 
 easy_acess_vars_file_path = save_dir + "easy_acess_vars.txt"
 
@@ -117,7 +117,7 @@ mem = ReplayMemory(args.memory_size,
 
 try:
 	mem.add_all(np.load(mem_load_path,allow_pickle=True).item())
-	print(" loaded memory from {mem_load_path}")
+	print(f"loaded memory from {mem_load_path}")
 except FileNotFoundError:
 	print("no previous memory file (data used to train policy) was found. If you're not loading an existing model this is fine. If you are, it's up to you if you care...")
 	
@@ -125,26 +125,22 @@ except FileNotFoundError:
 
 
 # function to evaluate and report on current agent state
-# return best mean and min
-def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_max_to_report = 1):
+# return summary statistics in dictionary
+def test_agent(num_iterations,eval_examples_path, num_min_to_report=1, num_max_to_report = 1, current_train_episode= None):
 	#assert not any(torch.isnan(p).any() for p in network.parameters()) , "okay model has nan values. maybe gradient exploding again... ig decrease lr or actually introduce gradient clipping?"
-
+ 
 	network.eval()
 
+	# set up lists to store information about each game
 	stats_list= {} 
-
 	stats_list["start_state"]= []
 	stats_list["final_state"]= []
 	stats_list["obs"]= []
 	stats_list["action_list"]= []
 	stats_list["action_list_len"]= []
 	stats_list["reward"]= []
-
 	for stat in problem_specific_stats.keys():
 		stats_list[stat] = []
-
-
-	print("-"*50 +str(current_train_episode)+ "-"*50)
 
 
 	# do the validation runs and print them and info about them out
@@ -181,9 +177,9 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 			print()
  
 	#print basically the same things but order by reward into saved file
-	indices_sorted_by_reward =np.argsort(stats_list["reward"])
- 
-	with open(eval_examples_path + str(current_train_episode)+ ".txt", "w") as file:
+	indices_sorted_by_reward =np.argsort(stats_list["reward"]) 
+
+	with open(eval_examples_path, "w") as file:
 		#... our naming isn't great here but idk what do so... leaving for now ig :D 
 		for index_num, i in enumerate(indices_sorted_by_reward):
 			print(index_num, file = file)
@@ -193,11 +189,12 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 				print(val[i],file=file)
 			print(file=file)
 
-	#probbaly should rename stuff but...
 
+	#probbaly should rename stuff but..
 	# storing the like data about overall validation run
 	statistics= {}
-	statistics["train_episode"] = current_train_episode
+	if current_train_episode:
+		statistics["train_episode"] = current_train_episode
 	statistics["avg_reward"]= np.mean(stats_list["reward"]).item()
 	statistics["std_reward"]= np.std(stats_list["reward"]).item()
 	statistics["min_rewards"]=[ stats_list["reward"][i].item() for i in indices_sorted_by_reward[0:num_min_to_report]]
@@ -213,24 +210,20 @@ def test_agent(num_iterations,current_train_episode, num_min_to_report=1, num_ma
 	for stat,value in statistics.items():
 		print(f"{stat}:{value}")
 
-	 
-	with open(log_file_path, "a") as log_file:
-		print(f"eval end time: { (time.time()-program_start_time)/60} minutes", file = log_file)
 
+	#print summary statistics into end of into eval file
+	with open(eval_examples_path,  "a") as file:
+		print(file = file)
 		for stat,value in statistics.items():
-			print(f"{stat}:{value}", file = log_file) 
-		
-		print("__log__", json.dumps(statistics), file = log_file) 
-		#this line is so it's easier to read basically for us later. like... if file lengths vary/want to add more statistics, this line will stay one line instead of being multipel so its easiest to just read this line instead of variable number of lnies to read yknow... i'm tired :D
-
-		print(file = log_file)
-
+			print(f"{stat}:{value}", file = file) 
  
-	return statistics["avg_reward"], np.mean(statistics["min_rewards"])
+ 
+	return statistics
+	 
+	# print overall statistics into saved file, the log file if we aren't eval only and the eval file if it's eval only
 
-
-def loop():
-
+	
+def train_eval_loop():
 	#figure out how many train_episodes we've done
 	try:
 		with open(easy_acess_vars_file_path , "r") as file:
@@ -288,11 +281,32 @@ def loop():
    
 		#evaluate agent, then update most recent model and memory
 		if i % args.eval_freq== 0: 
+			current_train_episode = start_num_train_episodes+i
+			print("-"*50 +str(current_train_episode)+ "-"*50)
+
 			with open(log_file_path, "a+") as file:
 				print(f"train end time: { (time.time()-program_start_time)/60} minutes", file = file)
 
-			mean_rew, mean_min_rew = test_agent(args.num_eval_iterations, start_num_train_episodes+i, args.num_min_to_report, args.num_max_to_report)
-  
+			statistics = test_agent(
+					args.num_eval_iterations,
+					eval_examples_base_path + str(start_num_train_episodes+i) + ".txt", 
+					args.num_min_to_report, 
+					args.num_max_to_report, 
+					current_train_episode
+				)
+			 
+			# print the summary statistics into the log file
+			with open(log_file_path, "a") as log_file:
+				print(f"eval end time: { (time.time()-program_start_time)/60} minutes", file = log_file)
+
+				for stat,value in statistics.items():
+					print(f"{stat}:{value}", file = log_file) 
+				
+				print("__log__", json.dumps(statistics), file = log_file) #this line is so it's easier to read basically for us later. like... if file lengths vary/want to add more statistics, this line will stay one line instead of being multipel so its easiest to just read this line instead of variable number of lnies to read yknow... i'm tired :D
+
+				print(file = log_file)
+   
+
 			#update most recent model
 			checkpoint = {
 						"policy": network.state_dict(),
@@ -310,16 +324,11 @@ def loop():
 			np.save(recent_memory_file_path, mem_save_state )
 
 			#update best mean or best min network if needed
-			if mean_rew > best_mean: 
-				best_mean = mean_rew
+			if statistics["avg_reward"]> best_mean: 
+				best_mean = statistics["avg_reward"]
 				torch.save(checkpoint, best_mean_model_save_state_path)
 
 				np.save(best_mean_memory_file_path, mem_save_state)
-			if mean_min_rew > best_min:
-				best_min = mean_min_rew
-				torch.save(checkpoint, best_min_model_save_state_path)
-
-				np.save(best_min_memory_file_path, mem_save_state)
 
 			#save numberof train episodes
 			with open(easy_acess_vars_file_path, "w") as file:
@@ -339,6 +348,26 @@ def loop():
 				np.save(memory_periodic_save_path,mem_save_state)
 				
 
+			print("-"*50 + "model and memory saved? maybe give it a minute to be safe..." + "-"*50)
 
-	
-			print("-"*50 + "model and memory saved? maybe give it a couple minutes to be safe..." + "-"*50)
+
+
+
+def main():
+	if args.eval_only:
+		#... i mean maybe this shouldn't be a fixed max thing but... i imagine something is wrong if goes past 1000
+		for i in range(1,1000):
+			eval_examples_path = eval_examples_base_path + f"only-{i}.txt"
+			if (not pathlib.Path(eval_examples_path).is_file()):
+				break;
+		
+		assert i< 1000, "probably a bug? or you have 100 eval files already which i guess we're not allowing. if you really want you can delete or move the most recent existing eval files out of the current folder. or you can reload the model in another folder and continue there?"
+
+		test_agent(
+					args.num_eval_iterations,
+					eval_examples_path, 
+					args.num_min_to_report, 
+					args.num_max_to_report
+				) 
+	else:
+		train_eval_loop()

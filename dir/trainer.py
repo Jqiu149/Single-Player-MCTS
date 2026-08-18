@@ -35,7 +35,7 @@ class Trainer:
             #case for the older saves where just saved a model and no optimzer...
             if not "policy" in checkpoint:
                 self.step_model.load_state_dict(checkpoint) 
-                print("loaded_model")
+                print(f"loaded_model from  {model_path}")
             else:
                 self.step_model.load_state_dict(checkpoint["policy"])
                 self.optimizer.load_state_dict(checkpoint["optimizer"])
