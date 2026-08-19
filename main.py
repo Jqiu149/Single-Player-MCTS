@@ -1,4 +1,3 @@
-from dir.train_eval_loop import loop
+from dir.train_eval_loop import main
 
-loop()
-
+main()
