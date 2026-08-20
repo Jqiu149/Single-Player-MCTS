@@ -241,10 +241,6 @@ def train_eval_loop():
 		avg_policy_losses = []
 
 	
-	#create folders we're going to store our files in if it doesn't exist
-	pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
-
-
 	# print the values of the arguments for this program 
 	print(json.dumps(vars(args), sort_keys = True, indent = 0)[1:-1])
 
@@ -354,6 +350,10 @@ def train_eval_loop():
 
 
 def main():
+	#create folders we're going to store our files in if it doesn't exist
+	pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
+
+
 	if args.eval_only:
 		#... i mean maybe this shouldn't be a fixed max thing but... i imagine something is wrong if goes past 1000
 		for i in range(1,1000):
@@ -363,7 +363,7 @@ def main():
 		
 		assert i< 1000, "probably a bug? or you have 100 eval files already which i guess we're not allowing. if you really want you can delete or move the most recent existing eval files out of the current folder. or you can reload the model in another folder and continue there?"
 
-        print("doing eval only run")
+		print("doing eval only run")
 		test_agent(
 					args.num_eval_iterations,
 					eval_examples_path, 
