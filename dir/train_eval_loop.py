@@ -363,6 +363,7 @@ def main():
 		
 		assert i< 1000, "probably a bug? or you have 100 eval files already which i guess we're not allowing. if you really want you can delete or move the most recent existing eval files out of the current folder. or you can reload the model in another folder and continue there?"
 
+        print("doing eval only run")
 		test_agent(
 					args.num_eval_iterations,
 					eval_examples_path, 
