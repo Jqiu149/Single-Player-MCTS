@@ -121,7 +121,7 @@ class Env(StaticEnv):
 
 
 statistic_functions=  {
-        "lagrange_step_counts": lagrange_step_counts,
+        "lagrange_step_counts_updated": lagrange_step_counts,
         "reached_min_magnitude": reached_min_mag
         }
 

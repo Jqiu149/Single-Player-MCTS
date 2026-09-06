@@ -110,7 +110,6 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 	swap_count = 0
 	subtract_count = 0
 	while(not done):
-
 		if(norm1Squared> norm2Squared):
 			v1,v2 = v2,v1
 			norm1Squared,norm2Squared = norm2Squared,norm1Squared
@@ -121,10 +120,10 @@ def LagrangeReduce(v1,v2, returnSteps= False):
 		v2 = v2-u*v1
 		norm2Squared= np.dot(v2,v2) 
 
-		subtract_count += abs(u)
-
 		if(norm1Squared<= norm2Squared):
 			done = True
+		else:
+			subtract_count += abs(u)
 
 	if returnSteps:
 		return [swap_count, subtract_count]
