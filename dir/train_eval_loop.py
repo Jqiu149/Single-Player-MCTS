@@ -82,7 +82,7 @@ mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_
 #mcts settings
 mcts.C_PUCT = args.c_puct
 mcts.TEMP_THRESHOLD=args.temp_threshold
-mcts.D_NOISE_ALPHA  = args.D_NOISE_ALPHA
+mcts.D_NOISE_ALPHA  = args.d_noise_alpha
 
 
 #policy settings
