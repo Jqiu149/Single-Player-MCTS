@@ -67,6 +67,7 @@ def get_input():
     parser.add_argument("--num_simulations", type=int, default=300, help="number of simulations before a step is taken in MCTS")
 
     parser.add_argument("--c_puct", type= float, default = 3)
+    parser.add_argument("--d_noise_alpha", type= float, default = 0.03)
     parser.add_argument("--temp_threshold", type= int, default = 50)
 
 
