@@ -1,3 +1,19 @@
+#attempted changes
+# making it so we keep a dictionary of states we've seen before and if during a simulation we want to expand a tree wit h a state we've seen before, we reuse that node
+# when propogating value scores, we only propogate up to states seen in this sepcific 'game'
+
+# in a simulation we're also not allowing going back to a seen state mainly b/c idk how else to avoid getting infintie parent loop thingy
+
+        #ig could do uh like make parent a list of things and pop one off each time you like go to?
+    #i think this involves changing more code than i want to do right now.
+
+
+
+
+#also we have a very temporary not general way of changing the states to be tuples...
+#need to make it work for general states...
+
+
 """
 Adapted from https://github.com/tensorflow/minigo/blob/master/mcts.py
 
@@ -132,7 +148,7 @@ class MCTSNode:
         """
         return self.child_Q + self.child_U
 
-    def select_leaf(self, seen_states):
+    def select_leaf(self, overall_seen_states):
         """
         Traverses the MCT rooted in the current node until it finds a leaf
         (i.e. a node that only exists in its parent node in terms of its
@@ -143,18 +159,37 @@ class MCTSNode:
         `incorporate_estimates` afterwards.
         :return: Expanded leaf MCTSNode.
         """
+
+        current_game_seen_states = set()
+
         current = self
         while True:
+            print("hi")
             current.N += 1
             # Encountered leaf node (i.e. node that is not yet expanded).
             if not current.is_expanded:
                 break
             # Choose action with highest score.
-            best_move = np.argmax(current.child_action_score)
-            current = current.maybe_add_child(best_move, seen_states)
+
+            sorted_action_score_indices= np.argsort(current.child_action_score)
+            #best_move = np.argmax(current.child_action_score)
+
+
+            for move in reversed(sorted_action_score_indices):
+                next_state= current.maybe_add_child(move, overall_seen_states,current_game_seen_states)
+
+                if next_state:
+                    current= next_state
+                    print(next_state.state)
+                    break
+
+        print("done find leaf?")
         return current
 
-    def maybe_add_child(self, action, seen_states):
+
+
+
+    def maybe_add_child(self, action, overall_seen_states=None,current_game_seen_states = None ):
         """
         Adds a child node for the given action if it does not yet exists, and
         returns it.
@@ -164,19 +199,34 @@ class MCTSNode:
         """
 
 
+        new_state = self.TreeEnv.next_state(self.state, action)
+        new_state_tuple = (tuple(new_state[0]), tuple(new_state[1]), new_state[2], new_state[3])  #converting new_states to tuple so hashable
+
+        if current_game_seen_states !=None:
+
+            if new_state_tuple in current_game_seen_states:
+                print("this thing ran?")
+                return False
+
+            print("game seen states:",current_game_seen_states)
+            print("new state", new_state_tuple)
+
+            current_game_seen_states.add(new_state_tuple)
+
         if action not in self.children:
             # Obtain state following given action.
-            new_state = self.TreeEnv.next_state(self.state, action)
-
-            seen_state_node= new_state.get(seen_states, False)
+           
+            seen_state_node= overall_seen_states.get(new_state_tuple, False)
             if seen_state_node:
-                self.children[action] = seen_state
+                seen_state_node.parent = self
+                self.children[action] = seen_state_node
             else:
                 new_node = MCTSNode(new_state, self.n_actions,
                                              self.TreeEnv,
                                              action=action, parent=self)
                 self.children[action]  =  new_node
-                seen_states[new_state] =  new_node
+                overall_seen_states[new_state_tuple] =  new_node
+
 
         return self.children[action]
 
@@ -185,6 +235,9 @@ class MCTSNode:
         Propagate a virtual loss up to a given node.
         :param up_to: The node to propagate until.
         """
+
+        print(self.state)
+
         self.n_vlosses += 1
         self.W -= 1
         if self.parent is None or self is up_to:
@@ -250,6 +303,7 @@ class MCTSNode:
         :param value: Value estimate to be propagated.
         :param up_to: The node to propagate until.
         """
+        print(self.state)
         self.W += value
         if self.parent is None or self is up_to:
             return
