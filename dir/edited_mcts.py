@@ -9,6 +9,8 @@
 
 
 
+#okay this isn't going to work b/c can't do the 'parallell' guys / reach multipel leaves befpre expanding tree thing if doing this... we probably need to do the like... making list of path taking trhough graph thing instead if want to do this well but okay.
+
 
 #also we have a very temporary not general way of changing the states to be tuples...
 #need to make it work for general states...
@@ -160,11 +162,15 @@ class MCTSNode:
         :return: Expanded leaf MCTSNode.
         """
 
-        current_game_seen_states = set()
-
         current = self
+
+        
+        start_state_tuple = (tuple(self.state[0]), tuple(self.state[1]), self.state[2], self.state[3])  #converting new_states to tuple so hashable
+
+        current_game_seen_states = {start_state_tuple}
+
+
         while True:
-            print("hi")
             current.N += 1
             # Encountered leaf node (i.e. node that is not yet expanded).
             if not current.is_expanded:
@@ -180,7 +186,6 @@ class MCTSNode:
 
                 if next_state:
                     current= next_state
-                    print(next_state.state)
                     break
 
         print("done find leaf?")
@@ -213,6 +218,7 @@ class MCTSNode:
 
             current_game_seen_states.add(new_state_tuple)
 
+        print("self:", self)
         if action not in self.children:
             # Obtain state following given action.
            
@@ -228,6 +234,7 @@ class MCTSNode:
                 overall_seen_states[new_state_tuple] =  new_node
 
 
+        self.children[action].parent = self
         return self.children[action]
 
     def add_virtual_loss(self, up_to):
@@ -236,7 +243,6 @@ class MCTSNode:
         :param up_to: The node to propagate until.
         """
 
-        print(self.state)
 
         self.n_vlosses += 1
         self.W -= 1
@@ -303,7 +309,8 @@ class MCTSNode:
         :param value: Value estimate to be propagated.
         :param up_to: The node to propagate until.
         """
-        print(self.state)
+        print("up to:", up_to.state)
+        print("backup_value vall current state", self.state)
         self.W += value
         if self.parent is None or self is up_to:
             return
@@ -399,7 +406,7 @@ class MCTS:
         :return: The leaf nodes which were expanded.
         """
         if num_parallel is None:
-            num_parallel = self.num_parallel
+            num_parallel = 1
         leaves = []
         # Failsafe for when we encounter almost only done-states which would
         # prevent the loop from ever ending.
@@ -414,6 +421,7 @@ class MCTS:
             if leaf.is_done():
                 value = self.TreeEnv.get_return(leaf.state, leaf.depth)
                 leaf.backup_value(value, up_to=self.root)
+                print("root is....", self.root.state)
                 continue
             # Otherwise, discourage other threads to take the same trajectory
             # via virtual loss and enqueue the leaf for evaluation by agent
