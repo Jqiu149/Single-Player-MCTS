@@ -16,6 +16,9 @@
 #need to make it work for general states...
 
 
+#also, removed teh 'del self.parent.childre' call at the end of take action... tbh not sure why it's there but okay. :
+
+
 """
 Adapted from https://github.com/tensorflow/minigo/blob/master/mcts.py
 
@@ -188,7 +191,6 @@ class MCTSNode:
                     current= next_state
                     break
 
-        print("done find leaf?")
         return current
 
 
@@ -210,15 +212,11 @@ class MCTSNode:
         if current_game_seen_states !=None:
 
             if new_state_tuple in current_game_seen_states:
-                print("this thing ran?")
                 return False
 
-            print("game seen states:",current_game_seen_states)
-            print("new state", new_state_tuple)
 
             current_game_seen_states.add(new_state_tuple)
 
-        print("self:", self)
         if action not in self.children:
             # Obtain state following given action.
            
@@ -309,8 +307,6 @@ class MCTSNode:
         :param value: Value estimate to be propagated.
         :param up_to: The node to propagate until.
         """
-        print("up to:", up_to.state)
-        print("backup_value vall current state", self.state)
         self.W += value
         if self.parent is None or self is up_to:
             return
@@ -421,7 +417,6 @@ class MCTS:
             if leaf.is_done():
                 value = self.TreeEnv.get_return(leaf.state, leaf.depth)
                 leaf.backup_value(value, up_to=self.root)
-                print("root is....", self.root.state)
                 continue
             # Otherwise, discourage other threads to take the same trajectory
             # via virtual loss and enqueue the leaf for evaluation by agent
@@ -470,7 +465,7 @@ class MCTS:
 
         # Resulting state becomes new root of the tree.
         self.root = self.root.maybe_add_child(action)
-        del self.root.parent.children
+        #del self.root.parent.children
 
 
 def execute_episode(agent_netw, num_simulations, TreeEnv):
