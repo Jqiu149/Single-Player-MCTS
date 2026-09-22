@@ -100,34 +100,65 @@ class MCTSNode:
         self.n_actions = n_actions
         self.is_expanded = False
         self.n_vlosses = 0  # Number of virtual losses on this node
-        self.child_N = np.zeros([n_actions], dtype=np.float32)
-        self.child_W = np.zeros([n_actions], dtype=np.float32)
+#        self.child_N = np.zeros([n_actions], dtype=np.float32)
+#        self.child_W = np.zeros([n_actions], dtype=np.float32)
         # Save copy of original prior before it gets mutated by dirichlet noise
         self.original_prior = np.zeros([n_actions], dtype=np.float32)
         self.child_prior = np.zeros([n_actions], dtype=np.float32)
         self.children = {}
 
+
+        self.N = np.float32(0)
+        self.W = np.float32(1) 
+
+
+        #i want to store the N and W values in the actual node instead of the parent node....
+        #maybe also make it so like... we just track the fricking paths that toook instead of doing the parent thing... but that feels like a way more significant change
+
+
+
+        #okay maybe have changed the like variables and the like property function thingies.
+        #need to change partso f code that awere setting/using these ig?
+        #or go over at least....
+
     @property
-    def N(self):
+    def child_N(self):
         """
-        Returns the current visit count of the node.
         """
-        return self.parent.child_N[self.action]
+        #return self.parent.child_N[self.action]
 
-    @N.setter
-    def N(self, value):
-        self.parent.child_N[self.action] = value
+        result= np.empty(self.n_actions, dtype = np.float32)
+
+        for i in range (self.n_actions):
+            child_i =self.children.get(i, False)
+            result[i] = child_i.N if child_i else 0
+
+            
+        return result
+
+    #@N.setter
+    #def N(self, value):
+    #    self.parent.child_N[self.action] = value
 
     @property
-    def W(self):
+    def child_W(self):
         """
-        Returns the current total value of the node.
         """
-        return self.parent.child_W[self.action]
 
-    @W.setter
-    def W(self, value):
-        self.parent.child_W[self.action] = value
+        result= np.empty(self.n_actions, dtype = np.float32)
+
+        for i in range (self.n_actions):
+            child_i =self.children.get(i, False)
+            result[i] = child_i.W if child_i else 0
+
+            
+        return result
+
+
+
+    #@W.setter
+    #def W(self, value):
+    #    self.parent.child_W[self.action] = value
 
     @property
     def Q(self):
@@ -298,7 +329,9 @@ class MCTSNode:
         self.original_prior = self.child_prior = action_probs
         # This is a deviation from the paper that led to better results in
         # practice (following the MiniGo implementation).
-        self.child_W = np.ones([self.n_actions], dtype=np.float32) * value
+        #self.child_W = np.ones([self.n_actions], dtype=np.float32) * value
+
+            #with how we've changed things... i think just initalizing the W value to be 1 in init for nodes is fine?
         self.backup_value(value, up_to=up_to)
 
     def backup_value(self, value, up_to):
@@ -458,6 +491,10 @@ class MCTS:
         self.searches_pi.append(
             self.root.visits_as_probs()) # TODO: Use self.root.position.n < self.temp_threshold as argument
         self.qs.append(self.root.Q)
+
+        print("action", action)
+        print("type of action:", type(action))
+        print("children:", self.root.children)
         reward = (self.TreeEnv.get_return(self.root.children[action].state,
                                           self.root.children[action].depth)
                   - sum(self.rewards))
