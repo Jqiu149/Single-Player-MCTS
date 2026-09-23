@@ -133,7 +133,7 @@ class MCTSNode:
             child_i =self.children.get(i, False)
             result[i] = child_i.N if child_i else 0
 
-            
+                    
         return result
 
     #@N.setter
@@ -492,9 +492,6 @@ class MCTS:
             self.root.visits_as_probs()) # TODO: Use self.root.position.n < self.temp_threshold as argument
         self.qs.append(self.root.Q)
 
-        print("action", action)
-        print("type of action:", type(action))
-        print("children:", self.root.children)
         reward = (self.TreeEnv.get_return(self.root.children[action].state,
                                           self.root.children[action].depth)
                   - sum(self.rewards))
