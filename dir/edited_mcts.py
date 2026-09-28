@@ -2,22 +2,25 @@
 # making it so we keep a dictionary of states we've seen before and if during a simulation we want to expand a tree wit h a state we've seen before, we reuse that node
 # when propogating value scores, we only propogate up to states seen in this sepcific 'game'
 
-# in a simulation we're also not allowing going back to a seen state mainly b/c idk how else to avoid getting infintie parent loop thingy
+    #during simutaitons if reuse node we adjust parent to be current node coming from (for propogating vlaues and stuff upwards)
 
-        #ig could do uh like make parent a list of things and pop one off each time you like go to?
-    #i think this involves changing more code than i want to do right now.
-
-
-
-#okay this isn't going to work b/c can't do the 'parallell' guys / reach multipel leaves befpre expanding tree thing if doing this... we probably need to do the like... making list of path taking trhough graph thing instead if want to do this well but okay.
-
-
-#also we have a very temporary not general way of changing the states to be tuples...
-#need to make it work for general states...
+    # in a simulation we're also not allowing going back to a seen state mainly b/c idk how else to avoid getting infintie parent loop thingy
+   #ig could do uh like make parent a list of things and pop one off each time you like go to?
+    #but i think this involves changing more code than i want to do right now.
+    #would need to change how they do the virtual losses and the updating of values
 
 
 #also, removed teh 'del self.parent.childre' call at the end of take action... tbh not sure why it's there but okay. :
 
+
+#okay in addition to editing parents, the depth of nodes is also being edited in the simuations
+#and in the execute episode (for training and evla) we're just keeping track of a steps variable that we increment by 1 for every action taken
+#then edited is_done to take in a variabel to use for the steps thing as an option...
+
+
+
+#also we have a very temporary not general way of changing the states to be tuples...
+#need to make it work for general states...
 
 """
 Adapted from https://github.com/tensorflow/minigo/blob/master/mcts.py
@@ -264,6 +267,7 @@ class MCTSNode:
 
 
         self.children[action].parent = self
+        self.children[action].depth= self.depth+1
         return self.children[action]
 
     def add_virtual_loss(self, up_to):
@@ -345,7 +349,10 @@ class MCTSNode:
             return
         self.parent.backup_value(value, up_to)
 
-    def is_done(self):
+    def is_done(self, steps=None):
+        if steps != None:
+            return self.TreeEnv.is_done_state(self.state, steps)
+
         return self.TreeEnv.is_done_state(self.state, self.depth)
 
     def inject_noise(self):
@@ -519,14 +526,17 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
     """
     mcts = MCTS(agent_netw, TreeEnv)
 
+
     mcts.initialize_search()
 
+    steps = 0
     # Must run this once at the start, so that noise injection actually affects
     # the first action of the episode.
     first_node = mcts.root.select_leaf(mcts.seen_states)
     probs, vals = agent_netw.step(
         TreeEnv.get_obs_for_states([first_node.state]))
     first_node.incorporate_estimates(probs[0], vals[0], first_node)
+
 
     while True:
         mcts.root.inject_noise()
@@ -543,12 +553,14 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
         action = mcts.pick_action()
         mcts.take_action(action)
 
-        if mcts.root.is_done():
+        steps+=1;
+
+        if mcts.root.is_done(steps):
             break
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth-i) for i
+    ret = [TreeEnv.get_return(mcts.root.state, steps-i) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)
@@ -583,6 +595,9 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
     mcts.initialize_search()
 
+
+    steps = 0
+
     # Must run this once at the start, so that noise injection actually affects
     # the first action of the episode.
     first_node = mcts.root.select_leaf(mcts.seen_states)   # like does the run down till find a leaf thing, which in this case is jsut the first node we have in the tree?
@@ -609,12 +624,14 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
         mcts.take_action(action)   #changes root to be the guy move to? and stores the observation, probabilites, and reward at this step
         action_list.append(action)
 
-        if mcts.root.is_done():
+        steps+=1
+
+        if mcts.root.is_done(steps):
             break
 
     # Computes the returns at each step from the list of rewards obtained at
     # each step. The return is the sum of rewards obtained *after* the step.
-    ret = [TreeEnv.get_return(mcts.root.state, mcts.root.depth-i) for i
+    ret = [TreeEnv.get_return(mcts.root.state, steps-i) for i
            in range(len(mcts.rewards))]
 
     total_rew = np.sum(mcts.rewards)
