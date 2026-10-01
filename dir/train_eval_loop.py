@@ -257,7 +257,7 @@ def train_eval_loop():
 	#actual training now ig
 
 	for i in range(1,args.num_train_episodes+1):
-		if i% (args.eval_freq/5) ==0:
+		if i% (args.eval_freq//5) ==0:
 			print(f"{ ( time.time()-program_start_time) // 60 } min since program start : train episode {i}")
 
 		with torch.no_grad():

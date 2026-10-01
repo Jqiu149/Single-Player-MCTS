@@ -15,9 +15,7 @@
 
 #okay in addition to editing parents, the depth of nodes is also being edited in the simuations
 #and in the execute episode (for training and evla) we're just keeping track of a steps variable that we increment by 1 for every action taken
-#then edited is_done to take in a variabel to use for the steps thing as an option...
-
-
+#and when take a step, we reset the nodes depth to be the step counter value
 
 #also we have a very temporary not general way of changing the states to be tuples...
 #need to make it work for general states...
@@ -349,10 +347,7 @@ class MCTSNode:
             return
         self.parent.backup_value(value, up_to)
 
-    def is_done(self, steps=None):
-        if steps != None:
-            return self.TreeEnv.is_done_state(self.state, steps)
-
+    def is_done(self):
         return self.TreeEnv.is_done_state(self.state, self.depth)
 
     def inject_noise(self):
@@ -526,7 +521,6 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
     """
     mcts = MCTS(agent_netw, TreeEnv)
 
-
     mcts.initialize_search()
 
     steps = 0
@@ -553,9 +547,11 @@ def execute_episode(agent_netw, num_simulations, TreeEnv):
         action = mcts.pick_action()
         mcts.take_action(action)
 
-        steps+=1;
+        steps+=1
 
-        if mcts.root.is_done(steps):
+        mcts.root.N = steps
+
+        if mcts.root.is_done():
             break
 
     # Computes the returns at each step from the list of rewards obtained at
@@ -626,7 +622,9 @@ def execute_episode_eval(agent_netw, num_simulations, TreeEnv):
 
         steps+=1
 
-        if mcts.root.is_done(steps):
+        mcts.root.N = steps
+
+        if mcts.root.is_done():
             break
 
     # Computes the returns at each step from the list of rewards obtained at
