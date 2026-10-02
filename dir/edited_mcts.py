@@ -5,9 +5,11 @@
     #during simutaitons if reuse node we adjust parent to be current node coming from (for propogating vlaues and stuff upwards)
 
     # in a simulation we're also not allowing going back to a seen state mainly b/c idk how else to avoid getting infintie parent loop thingy
-   #ig could do uh like make parent a list of things and pop one off each time you like go to?
-    #but i think this involves changing more code than i want to do right now.
-    #would need to change how they do the virtual losses and the updating of values
+    #there is an assumption being made that one of moves you go to will not be seen yet because of this. for us that's the 0 aciton / end game button. 
+
+       #ig could do uh like make parent a list of things and pop one off each time you like go to?
+        #but i think this involves changing more code than i want to do right now.
+        #would need to change how they do the virtual losses and the updating of values
 
 
 #also, removed teh 'del self.parent.childre' call at the end of take action... tbh not sure why it's there but okay. :
@@ -19,6 +21,18 @@
 
 #also we have a very temporary not general way of changing the states to be tuples...
 #need to make it work for general states...
+
+
+#function that will recursively  replace list and numpy array objects with tuples ig?
+def to_tuple(obj):
+    if isinstance(obj, (list, np.ndarray)):
+        return tuple( to_tuple(entry) for entry in obj)
+    else:
+        return obj
+
+
+
+
 
 """
 Adapted from https://github.com/tensorflow/minigo/blob/master/mcts.py
@@ -199,9 +213,7 @@ class MCTSNode:
 
         current = self
 
-        
-        start_state_tuple = (tuple(self.state[0]), tuple(self.state[1]), self.state[2], self.state[3])  #converting new_states to tuple so hashable
-
+        start_state_tuple = to_tuple(self.state)        
         current_game_seen_states = {start_state_tuple}
 
 
@@ -228,7 +240,7 @@ class MCTSNode:
 
 
 
-    def maybe_add_child(self, action, overall_seen_states=None,current_game_seen_states = None ):
+    def maybe_add_child(self, action,overall_seen_states=None,current_game_seen_states = None ):
         """
         Adds a child node for the given action if it does not yet exists, and
         returns it.
@@ -239,13 +251,12 @@ class MCTSNode:
 
 
         new_state = self.TreeEnv.next_state(self.state, action)
-        new_state_tuple = (tuple(new_state[0]), tuple(new_state[1]), new_state[2], new_state[3])  #converting new_states to tuple so hashable
+        new_state_tuple = to_tuple(new_state)
+
 
         if current_game_seen_states !=None:
-
             if new_state_tuple in current_game_seen_states:
                 return False
-
 
             current_game_seen_states.add(new_state_tuple)
 
