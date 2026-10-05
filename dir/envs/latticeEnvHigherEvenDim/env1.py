@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 from scipy.linalg import block_diag
+from fpylll import IntegerMatrix, LLL
 
 from ..static_env import StaticEnv
 from ..helper import *
@@ -21,7 +22,7 @@ apply_step_penalty = None
 MAX_STEP = None
 
 def get_obs_shape():
-	return [DIM, DIM]
+    return [DIM, DIM]
 
 
 
@@ -40,15 +41,15 @@ def create_E_ij_func(n, i,j, sign):
 
   E_ij = np.identity(n)
   if sign == "+":
-    E_ij[i,j] = 1
+      E_ij[i,j] = 1
   else:
-    E_ij[i,j] = -1
+      E_ij[i,j] = -1
 
 
   #function ig will assume it's taking in DIM by DIM np array?
   def fun(state):
-    resulting_matrix = np.matmul(E_ij,state[0]) % q
-    return [resulting_matrix, state[1], state[2]]
+      resulting_matrix = np.matmul(E_ij,state[0]) 
+      return [resulting_matrix, state[1], state[2]]
 
   return fun
 
@@ -66,7 +67,7 @@ def create_S_i(n,i):
 
 
   def fun(state):
-    resulting_matrix = np.matmul(S_i,state[0]) % q
+    resulting_matrix = np.matmul(S_i,state[0])
     return [resulting_matrix, state[1], state[2]]
 
   return fun
@@ -86,9 +87,10 @@ for i in range(DIM):
       action_list.append(create_E_ij_func(DIM,i,j,sign))
 
 for i in range(DIM-1):
-  action_list.append(create_S_i(n,i))
+  action_list.append(create_S_i(DIM,i))
 
 
+assert len(action_list)== DIM**2
 
 
 
@@ -100,93 +102,102 @@ for i in range(DIM-1):
 #observations ig are us doing grahm matrix?
 
 class Env(StaticEnv):
-	n_actions=DIM**2
+    n_actions=DIM**2
 
-	@staticmethod
-	def next_state(state, action):
-		"""
-		Given the current state of the environment and the action that is
-		performed in that state, returns the resulting state.
-		:param state: Current state of the environment.
-		:param action: Action that is performed in that state.
-		:return: Resulting state.
-		"""
+    @staticmethod
+    def next_state(state, action):
+        """
+        Given the current state of the environment and the action that is
+        performed in that state, returns the resulting state.
+        :param state: Current state of the environment.
+        :param action: Action that is performed in that state.
+        :return: Resulting state.
+        """
 
-		return action_list[action](state)
+
+
+
+        res = action_list[action](state)
+
+        return res
+
 
 # i don't think we can do the step_idx thing for is done if we want to only give reward at the end after the stop button is used
-	@staticmethod
-	def is_done_state(state, step_idx):
+    @staticmethod
+    def is_done_state(state, step_idx):
 
-		"""
-		Given the state and the index of the current step, returns whether
-		that state is the end of an episode, i.e. a done state.
-		:param state: Current state.
-		:param step_idx: Index of the step at which the state occurred.
-		:return: True, if the step is a done state, False otherwise.
-		"""
-		return state[-1] == True or step_idx >= MAX_STEP
+        """
+        Given the state and the index of the current step, returns whether
+        that state is the end of an episode, i.e. a done state.
+        :param state: Current state.
+        :param step_idx: Index of the step at which the state occurred.
+        :return: True, if the step is a done state, False otherwise.
+        """
+        return state[-1] == True or step_idx >= MAX_STEP
 
-	@staticmethod
-	def initial_state():
-		"""
-		Returns the initial state of the environment.
-		"""
-		def inital_basis(n,q):
-			zero_block = np.zeros((n,n),dtype=np.int64)
+    @staticmethod
+    def initial_state():
+        """
+        Returns the initial state of the environment.
+        """
+        #creates nxn matrix
+        def inital_basis(n,q):
+            zero_block = np.zeros((n,n),dtype=np.int64)
 
-			I_block = np.identity(n,dtype=np.int64)
+            I_block = np.identity(n,dtype=np.int64)
 
-			rng = np.random.default_rng()
-			A_block = rng.integers(0,q , size=(n,n),dtype=np.int64)
-			result = np.block([[q*I_block, zero_block], [A_block, I_block]]) 
+            rng = np.random.default_rng()
+            A_block = rng.integers(0,q , size=(n,n),dtype=np.int64)
+            result = np.block([[q*I_block, zero_block], [A_block, I_block]]) 
 
-			return result
+            return result
 
-		start_basis= inital_basis(DIM,q)
+        start_basis= inital_basis(N,q)
 
 
-		A=IntegerMatrix.from_matrix(start_basis)
-		Reduced = LLL.reduction(A) #should check what LLL paramater values we're runing this with ig? 
-		reduced_numpy =np.empty( (2*n,2*n) ,dtype=np.int64)
-		Reduced.to_matrix(reduced_numpy)
+        A=IntegerMatrix.from_matrix(start_basis)
+        Reduced = LLL.reduction(A) #should check what LLL paramater values we're runing this with ig? 
+        reduced_numpy =np.empty( (DIM,DIM) ,dtype=np.int64)
+        Reduced.to_matrix(reduced_numpy)
 
-		magnitudes = [np.linalg.norm(v) for v in reduced_numpy] 
+        magnitudes = [np.linalg.norm(v) for v in reduced_numpy] 
 
-		smallest_m = min(magnitudes)
+        smallest_m = min(magnitudes)
 
-		return start_basis + [smallest_m, False]
 
-	@staticmethod
-	def get_obs_for_states(states):
-		"""
-		Some environments distinguish states and observations. An observation
-		can be a subset (e.g. in Poker, state is all cards in game, observation
-		is cards on player's hand) or superset of the state (i.e. observations
-		add additional information).
-		:param states: List of states.
-		:return: Numpy array of observations.
-		"""
-		x = np.array([ state[0] @ state[0].T for state in states],dtype=np.float32)
-		return x
 
-	@staticmethod
-	def get_return(state, step_idx):
-		"""
-		Returns the return that the agent has achieved so far when he is in
-		a given state after a given number of steps.
-		:param state: Current state that the agent is in.
-		:param step_idx: Index of the step at which the agent reached that
-		state.
-		:return: Return the agent has achieved so far.
-		"""
+        return [start_basis, smallest_m, False]
 
-		min_magnitude= min([np.linalg.norm(v) for v in state[0]])
-		score = apply_step_penalty (
-					pre_penalty_reward = ( state[-2]/min_magnitude)**2 ,
-					step_count =  step_idx
-				)
-		return	score
+    @staticmethod
+    def get_obs_for_states(states):
+        """
+        Some environments distinguish states and observations. An observation
+        can be a subset (e.g. in Poker, state is all cards in game, observation
+        is cards on player's hand) or superset of the state (i.e. observations
+        add additional information).
+        :param states: List of states.
+        :return: Numpy array of observations.
+        """
+        x = np.array([ state[0] @ state[0].T for state in states],dtype=np.float32)
+        return x
+
+    @staticmethod
+    def get_return(state, step_idx):
+        """
+        Returns the return that the agent has achieved so far when he is in
+        a given state after a given number of steps.
+        :param state: Current state that the agent is in.
+        :param step_idx: Index of the step at which the agent reached that
+        state.
+        :return: Return the agent has achieved so far.
+        """
+
+        min_magnitude= min([np.linalg.norm(v) for v in state[0]])
+        score = apply_step_penalty (
+                    pre_penalty_reward = ( state[-2]/min_magnitude)**2 ,
+                    step_count =  step_idx
+                )
+        return  score
 
 
 statistic_functions= {
