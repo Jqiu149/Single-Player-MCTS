@@ -47,7 +47,7 @@ def create_E_ij_func(n, i,j, sign):
 
   #function ig will assume it's taking in DIM by DIM np array?
   def fun(state):
-    resulting_matrix = np.matmul(E_ij,state[0])
+    resulting_matrix = np.matmul(E_ij,state[0]) % q
     return [resulting_matrix, state[1], state[2]]
 
   return fun
@@ -66,7 +66,7 @@ def create_S_i(n,i):
 
 
   def fun(state):
-    resulting_matrix = np.matmul(S_i,state[0])
+    resulting_matrix = np.matmul(S_i,state[0]) % q
     return [resulting_matrix, state[1], state[2]]
 
   return fun
