@@ -17,8 +17,6 @@ def parse_init_method(input):
   return method, args
 
 
-
-
 def apply_flat_step_penalty(pre_penalty_reward, step_count,step_penalty):
     return pre_penalty_reward - step_count*step_penalty
 
