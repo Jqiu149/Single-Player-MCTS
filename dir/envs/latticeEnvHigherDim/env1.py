@@ -12,7 +12,7 @@ from .problem_specific_helpers import *
 #idk for now jsut writing this as a variable we'll change manually.....  ,maybe later figure out how to make it like editable through command line
 N=2 
 q= 251
-DIM = 2*N
+DIM = 2*N #dim of the actual matrix we're working on ig
 
 
 #will be functions, assigned by program using function in problem specific helpers
@@ -26,10 +26,6 @@ def get_obs_shape():
 
 
 
-
-
-#.... should my actions be like doing things modulo q?
-#i think so....? 
 
 
 

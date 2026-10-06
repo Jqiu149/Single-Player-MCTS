@@ -14,12 +14,12 @@ import time
 from .trainer import Trainer 
 from .replay_memory import ReplayMemory
 from . import mcts
-#from .mcts import execute_episode
-#from .mcts import execute_episode_eval
+from .mcts import execute_episode
+from .mcts import execute_episode_eval
 from .input_reading import get_input
 
-from .edited_mcts import execute_episode
-from .edited_mcts import execute_episode_eval
+#from .edited_mcts import execute_episode
+#from .edited_mcts import execute_episode_eval
 
 program_start_time = time.time()
 
