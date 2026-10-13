@@ -5,6 +5,10 @@ parser = argparse.ArgumentParser()
 
 def get_input():
 
+    #algorithm
+    parser.add_argument("--algorithm", type=str, default="mcts", help="which algorithm to use")
+ 
+
 
 #file saving  
     parser.add_argument("--dump_path", type=str, default="", help="Experiment dump path")

@@ -13,18 +13,30 @@ import time
 
 from .trainer import Trainer 
 from .replay_memory import ReplayMemory
-from . import mcts
-from .mcts import execute_episode
-from .mcts import execute_episode_eval
 from .input_reading import get_input
 
+
+#from . import mcts
 #from .edited_mcts import execute_episode
 #from .edited_mcts import execute_episode_eval
+#from .mcts import execute_episode
+#from .mcts import execute_episode_eval
+
+
+
 
 program_start_time = time.time()
 
-
 args =get_input()
+
+
+#specify mcts algorithm version?
+
+mcts_module = import_module(f".algs.{args.algorithm}", __name__.split(".")[-2])
+execute_episode = mcts_module.execute_episode
+execute_episode_eval= mcts_module.execute_episode_eval
+
+
 
 #environment settings
 env_module = import_module(f".envs.{args.env_folder}.{args.env_name}", __name__.split(".")[-2])
@@ -82,9 +94,9 @@ mem_load_path = args.reload_mem if args.reload_mem !="" else recent_memory_file_
 
 
 #mcts settings
-mcts.C_PUCT = args.c_puct
-mcts.TEMP_THRESHOLD=args.temp_threshold
-mcts.D_NOISE_ALPHA  = args.d_noise_alpha
+mcts_module.C_PUCT = args.c_puct
+mcts_module.TEMP_THRESHOLD=args.temp_threshold
+mcts_module.D_NOISE_ALPHA  = args.d_noise_alpha
 
 
 #policy settings

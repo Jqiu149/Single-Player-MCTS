@@ -9,6 +9,8 @@ import random as rd
 import collections
 import numpy as np
 
+print("using original mcts")
+
 # Exploration constant
 #originally set to 1.38
 #maybe was 2.4 for chess for alphazero?
