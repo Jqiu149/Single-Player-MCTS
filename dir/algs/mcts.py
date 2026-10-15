@@ -108,6 +108,8 @@ class MCTSNode:
 
     @W.setter
     def W(self, value):
+        print(self.action)
+        print(value)
         self.parent.child_W[self.action] = value
 
     @property
