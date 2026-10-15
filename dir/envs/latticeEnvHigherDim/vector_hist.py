@@ -50,11 +50,6 @@ def create_E_ij_func(n, i,j, sign):
       new_hist = state[1][0:-1]
       new_hist = [state[0][i]] + new_hist
 
-      print("E")
-      print(state)
-
-      print([resulting_matrix, new_hist, state[-2], state[-1]])
-
 
 
       return [resulting_matrix, new_hist, state[-2], state[-1]]
@@ -81,8 +76,6 @@ def create_S_i(n,i):
     new_hist = [state[0][i+1]] + new_hist
 
 
-    print([resulting_matrix, new_hist, state[-2], state[-1]])
-
 
     return [resulting_matrix, new_hist, state[-2], state[-1]]
 
@@ -97,7 +90,7 @@ action_list = []
 #list of functions 
 
 def end_game_action(state):
-  return [state[0], state[1], True]
+  return [state[0], state[1], state[-2], True]
 action_list.append(end_game_action)
 
 for i in range(DIM):
