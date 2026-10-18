@@ -197,5 +197,5 @@ class Env(StaticEnv):
 
 
 statistic_functions= {
-        "reached_min_magnitude": reached_min_mag
+        "reached_best_estimate": reached_best_estimate
       }
