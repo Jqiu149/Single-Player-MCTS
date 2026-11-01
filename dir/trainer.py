@@ -85,7 +85,6 @@ class Trainer:
 
                 grad_norm = torch.nn.utils.clip_grad_norm_(self.step_model.parameters(), self.max_grad_norm, error_if_nonfinite=False)
 
-                print(grad_norm)
 
                 if not torch.isfinite(grad_norm):
                     print("gradient norm wasn't finite, passing this training step")
